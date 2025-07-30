@@ -24,3 +24,41 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-content, .print-content * {
+    visibility: visible;
+  }
+  .print-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    background-color: white;
+    color: black;
+  }
+  
+  /* Asegura que Tailwind CSS se imprima correctamente */
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+  
+  /* Fuerza los colores de fondo para imprimir */
+  .bg-white {
+    background-color: white !important;
+  }
+  
+  /* Estilos específicos para tablas */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+  }
+}
