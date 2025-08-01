@@ -676,7 +676,7 @@ export default function Home() {
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <PrintButton formData={formData} />
-        <button
+        {/* <button
           type="button"
           onClick={() => {
             const dataStr = JSON.stringify(formData);
@@ -693,7 +693,7 @@ export default function Home() {
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
         >
           Guardar en dispositivo
-        </button>
+        </button> */}
       </div>
 
       {showSignaturePad.show && (

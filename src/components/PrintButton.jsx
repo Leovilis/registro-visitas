@@ -27,11 +27,22 @@ const PrintButton = ({ formData }) => {
         zIndex: printContent.style.zIndex
       };
 
-      // Hacer visible para captura
-      printContent.style.position = 'static';
-      printContent.style.left = 'auto';
+       // Ajustar estilos para móvil
+      printContent.style.position = 'fixed';
+      printContent.style.left = '0';
+      printContent.style.top = '0';
+      printContent.style.width = '100%';
+      printContent.style.height = 'auto';
       printContent.style.visibility = 'visible';
       printContent.style.zIndex = '9999';
+      printContent.style.padding = '10px';
+      printContent.style.backgroundColor = 'white';
+
+      // Hacer visible para captura
+      // printContent.style.position = 'static';
+      // printContent.style.left = 'auto';
+      // printContent.style.visibility = 'visible';
+      // printContent.style.zIndex = '9999';
 
       // Esperar un momento para que se renderice
       setTimeout(() => {
@@ -128,12 +139,17 @@ const PrintButton = ({ formData }) => {
           printWindow.document.close();
         } else {
           // Método alternativo con iframe
+          // const iframe = document.createElement('iframe');
+          // iframe.style.position = 'absolute';
+          // iframe.style.left = '-9999px';
+          // iframe.style.width = '210mm';
+          // iframe.style.height = '297mm';
           const iframe = document.createElement('iframe');
-          iframe.style.position = 'absolute';
-          iframe.style.left = '-9999px';
-          iframe.style.width = '210mm';
-          iframe.style.height = '297mm';
-          
+          iframe.style.position = 'fixed';
+          iframe.style.width = '1px';
+          iframe.style.height = '1px';
+          iframe.style.left = '-1px';
+          iframe.style.top = '-1px';
           document.body.appendChild(iframe);
           
           const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -154,9 +170,10 @@ const PrintButton = ({ formData }) => {
           printContent.style.position = originalStyles.position;
           printContent.style.left = originalStyles.left;
           printContent.style.visibility = originalStyles.visibility;
+          printContent.style.width = originalStyles.width;
+          printContent.style.height = originalStyles.height;
           printContent.style.zIndex = originalStyles.zIndex;
-          
-          URL.revokeObjectURL(url);
+          printContent.style.padding = '';
           setIsGenerating(false);
         }, 2000);
 
@@ -314,31 +331,20 @@ const PrintButton = ({ formData }) => {
   return (
     <>
       <style jsx global>{`
-        * {
-          color: black !important;
-        }
-        
-        button {
-          color: white !important;
-        }
-        
-        button:disabled {
-          color: #9CA3AF !important;
-        }
-        
-        .bg-blue-500, .bg-blue-600, .bg-green-500, .bg-green-600 {
-          color: white !important;
-        }
-
-        /* Estilos para firmas táctiles */
-        canvas {
-          touch-action: none;
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          -khtml-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .print-content, .print-content * {
+            visibility: visible;
+          }
+          .print-content {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            padding: 10px;
+          }
         }
       `}</style>
       
