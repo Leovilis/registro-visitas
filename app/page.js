@@ -248,7 +248,7 @@ export default function Home() {
 
         <div className="space-y-2">
           <label className="block text-sm font-medium text-gray-700">
-            HORARIO DE SALUDA DE ADMINISTRACIÓN:
+            HORARIO DE SALIDA DE ADMINISTRACIÓN:
           </label>
           <input
             type="text"
@@ -477,7 +477,7 @@ export default function Home() {
                     className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">-</option>
-                    <option value="S">S</option>
+                    <option value="S">SI</option>
                     <option value="NO">NO</option>
                   </select>
                 </td>

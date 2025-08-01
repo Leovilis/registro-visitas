@@ -1,5 +1,4 @@
-import { useRef, useState } from 'react';
-import { useReactToPrint } from 'react-to-print';
+import { useRef, useState, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -7,105 +6,261 @@ const PrintButton = ({ formData }) => {
   const componentRef = useRef();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Función para imprimir
+  // Función para imprimir - CORREGIDA
   const handlePrint = () => {
     setIsGenerating(true);
     
-    // Crear una nueva ventana para imprimir
-    const printWindow = window.open('', '_blank');
-    const printContent = componentRef.current;
-    
-    if (printContent && printWindow) {
-      printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>Registro de Visitas</title>
-            <style>
-              @page {
-                size: A4;
-                margin: 10mm;
-              }
-              * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-              }
-              body {
-                font-family: Arial, sans-serif;
-                font-size: 12px;
-                line-height: 1.4;
-                color: black;
-                background: white;
-              }
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-bottom: 10px;
-              }
-              th, td {
-                border: 1px solid black;
-                padding: 8px;
-                text-align: left;
-                background-color: white;
-                color: black;
-              }
-              th {
-                font-weight: bold;
-              }
-              h1, h2, h3, h4 {
-                color: black;
-                margin-bottom: 10px;
-              }
-              p {
-                color: black;
-                margin-bottom: 5px;
-              }
-              img {
-                max-width: 100%;
-                height: auto;
-                filter: grayscale(100%);
-              }
-              @media print {
-                body { 
-                  -webkit-print-color-adjust: exact; 
-                  print-color-adjust: exact;
-                }
-              }
-            </style>
-          </head>
-          <body>
-            ${printContent.innerHTML}
-          </body>
-        </html>
-      `);
+    try {
+      const printContent = componentRef.current;
       
-      printWindow.document.close();
-      printWindow.focus();
-      
-      // Esperar a que cargue y luego imprimir
-      setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
+      if (!printContent) {
+        console.error('No se encontró el contenido para imprimir');
         setIsGenerating(false);
-      }, 500);
-    } else {
+        return;
+      }
+
+      // HACER VISIBLE EL CONTENIDO TEMPORALMENTE
+      const originalStyles = {
+        position: printContent.style.position,
+        left: printContent.style.left,
+        visibility: printContent.style.visibility,
+        zIndex: printContent.style.zIndex
+      };
+
+      // Hacer visible para captura
+      printContent.style.position = 'static';
+      printContent.style.left = 'auto';
+      printContent.style.visibility = 'visible';
+      printContent.style.zIndex = '9999';
+
+      // Esperar un momento para que se renderice
+      setTimeout(() => {
+        const printStyles = `
+          <style>
+            @page {
+              size: A4;
+              margin: 10mm;
+            }
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+              color: black !important;
+              background-color: white !important;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              font-size: 12px;
+              line-height: 1.4;
+              color: black !important;
+              background: white !important;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 10px;
+            }
+            th, td {
+              border: 1px solid black !important;
+              padding: 8px;
+              text-align: left;
+              background-color: white !important;
+              color: black !important;
+            }
+            th {
+              font-weight: bold;
+            }
+            h1, h2, h3, h4 {
+              color: black !important;
+              margin-bottom: 10px;
+            }
+            p {
+              color: black !important;
+              margin-bottom: 5px;
+            }
+            img {
+              max-width: 100%;
+              height: auto;
+              filter: grayscale(100%);
+            }
+            @media print {
+              body { 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
+              }
+            }
+          </style>
+        `;
+
+        const fullHTML = `
+          <!DOCTYPE html>
+          <html lang="es">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Registro de Visitas</title>
+              ${printStyles}
+            </head>
+            <body>
+              ${printContent.innerHTML}
+              <script>
+                window.onload = function() {
+                  setTimeout(function() {
+                    window.print();
+                    setTimeout(function() {
+                      window.close();
+                    }, 100);
+                  }, 1000);
+                }
+              </script>
+            </body>
+          </html>
+        `;
+
+        // Crear blob y abrir ventana
+        const blob = new Blob([fullHTML], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        
+        const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
+        
+        if (printWindow) {
+          printWindow.document.write(fullHTML);
+          printWindow.document.close();
+        } else {
+          // Método alternativo con iframe
+          const iframe = document.createElement('iframe');
+          iframe.style.position = 'absolute';
+          iframe.style.left = '-9999px';
+          iframe.style.width = '210mm';
+          iframe.style.height = '297mm';
+          
+          document.body.appendChild(iframe);
+          
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          iframeDoc.open();
+          iframeDoc.write(fullHTML);
+          iframeDoc.close();
+          
+          setTimeout(() => {
+            iframe.contentWindow.print();
+            setTimeout(() => {
+              document.body.removeChild(iframe);
+            }, 1000);
+          }, 1000);
+        }
+
+        // Restaurar estilos originales
+        setTimeout(() => {
+          printContent.style.position = originalStyles.position;
+          printContent.style.left = originalStyles.left;
+          printContent.style.visibility = originalStyles.visibility;
+          printContent.style.zIndex = originalStyles.zIndex;
+          
+          URL.revokeObjectURL(url);
+          setIsGenerating(false);
+        }, 2000);
+
+      }, 100);
+
+    } catch (error) {
+      console.error('Error al imprimir:', error);
+      alert('Error al imprimir. Por favor, inténtelo de nuevo.');
       setIsGenerating(false);
     }
   };
 
-  // Función para generar PDF
+  // Función para verificar si hay contenido suficiente para múltiples páginas
+  const hasMultiplePageContent = () => {
+    // Verificar si hay actividades detalladas
+    const hasActividades = formData.actividades && formData.actividades.length > 0;
+    
+    // Verificar si hay documentos entregados
+    const hasDocEntregados = formData.documentacion?.entregados && 
+      formData.documentacion.entregados.some(doc => doc.nombre);
+    
+    // Verificar si hay documentos recibidos
+    const hasDocRecibidos = formData.documentacion?.recibidos && 
+      formData.documentacion.recibidos.some(doc => doc.nombre);
+    
+    // Verificar si hay firmas
+    const hasFirmas = formData.sucursal1?.firma || formData.sucursal2?.firma || 
+      formData.documentacion?.firma;
+    
+    // Contar visitantes
+    const visitantesCount = formData.visitantes ? 
+      formData.visitantes.filter(v => v.trim() !== '').length : 0;
+    
+    // Si hay muchas actividades, documentos o visitantes, probablemente necesite más de una página
+    return hasActividades && formData.actividades.length > 3 || 
+           hasDocEntregados || hasDocRecibidos || 
+           visitantesCount > 4 || hasFirmas;
+  };
+
+  // Función para detectar páginas vacías en canvas
+  const isPageEmpty = (canvas, pageStartY, pageHeight) => {
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, pageStartY, canvas.width, pageHeight);
+    const pixels = imageData.data;
+    
+    // Verificar si todos los píxeles son blancos (255, 255, 255) o transparentes
+    for (let i = 0; i < pixels.length; i += 4) {
+      const r = pixels[i];
+      const g = pixels[i + 1];
+      const b = pixels[i + 2];
+      const a = pixels[i + 3];
+      
+      // Si encuentra un píxel que no sea blanco, la página no está vacía
+      if (a > 0 && (r !== 255 || g !== 255 || b !== 255)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  // Función para generar PDF - MEJORADA con detección de páginas vacías
   const handleSavePDF = async () => {
     setIsGenerating(true);
     try {
       const element = componentRef.current;
+      
+      if (!element) {
+        throw new Error('No se encontró el elemento para generar PDF');
+      }
+
+      // Hacer visible temporalmente
+      const originalStyles = {
+        position: element.style.position,
+        left: element.style.left,
+        visibility: element.style.visibility,
+        width: element.style.width,
+        height: element.style.height
+      };
+      
+      element.style.position = 'static';
+      element.style.left = 'auto';
+      element.style.visibility = 'visible';
+      element.style.width = '210mm';
+      element.style.height = 'auto';
+
+      // Esperar a que se renderice
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         allowTaint: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        width: element.offsetWidth,
+        height: element.offsetHeight
       });
+
+      // Restaurar estilos
+      element.style.position = originalStyles.position;
+      element.style.left = originalStyles.left;
+      element.style.visibility = originalStyles.visibility;
+      element.style.width = originalStyles.width;
+      element.style.height = originalStyles.height;
 
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF({
@@ -116,21 +271,38 @@ const PrintButton = ({ formData }) => {
 
       const imgWidth = 210;
       const pageHeight = 295;
+      const canvasPageHeight = (pageHeight * canvas.width) / imgWidth; // Altura de página en píxeles del canvas
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+      
+      // Primera página (siempre se incluye)
+      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      
+      let heightLeft = imgHeight - pageHeight;
+      let currentPageStart = canvasPageHeight; // Posición Y en el canvas donde empieza la segunda página
+      let position = heightLeft - imgHeight;
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
+      // Solo agregar páginas adicionales si hay contenido y no están vacías
       while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        // Verificar si esta página tiene contenido
+        const pageEndY = Math.min(currentPageStart + canvasPageHeight, canvas.height);
+        const isEmpty = isPageEmpty(canvas, Math.floor(currentPageStart), Math.floor(pageEndY - currentPageStart));
+        
+        if (!isEmpty) {
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        } else {
+          console.log(`Página vacía detectada, omitiendo...`);
+          break; // Si encontramos una página vacía, no agregamos más páginas
+        }
+        
         heightLeft -= pageHeight;
+        position = heightLeft - imgHeight;
+        currentPageStart += canvasPageHeight;
       }
 
-      pdf.save(`registro_visitas_${formData.empresa || 'sin_empresa'}_${formData.fechaVisita || 'sin_fecha'}.pdf`);
+      const fileName = `registro_visitas_${formData.empresa || 'sin_empresa'}_${formData.fechaVisita || 'sin_fecha'}.pdf`;
+      pdf.save(fileName);
+      
     } catch (error) {
       console.error('Error al generar PDF:', error);
       alert('Error al generar el PDF');
@@ -157,9 +329,20 @@ const PrintButton = ({ formData }) => {
         .bg-blue-500, .bg-blue-600, .bg-green-500, .bg-green-600 {
           color: white !important;
         }
+
+        /* Estilos para firmas táctiles */
+        canvas {
+          touch-action: none;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
       `}</style>
       
-      <div className="flex gap-2">
+      <div className="flex gap-2 mb-4">
         <button
           onClick={handlePrint}
           disabled={isGenerating}
@@ -179,7 +362,7 @@ const PrintButton = ({ formData }) => {
         </button>
       </div>
 
-      {/* Contenedor para imprimir con todo el contenido */}
+      {/* Contenedor para imprimir - MOSTRAR CUANDO SE NECESITE */}
       <div 
         ref={componentRef} 
         className="print-content"
@@ -198,10 +381,10 @@ const PrintButton = ({ formData }) => {
       >
         {/* Encabezado */}
         <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <h1 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0' }}>
+          <h1 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', color: 'black' }}>
             REGISTRO DE VISITAS
           </h1>
-          <p style={{ fontSize: '10px', margin: '0' }}>
+          <p style={{ fontSize: '10px', margin: '0', color: 'black' }}>
             Para completar este formulario utilice como referencia el instructivo
             "I-RD-01" disponible en la carpeta Calidad Genéricos/Instructivos
           </p>
@@ -259,12 +442,12 @@ const PrintButton = ({ formData }) => {
 
         {/* Visitantes */}
         <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'black' }}>
             NOMBRE Y APELLIDO: (personas que realizan la visita)
           </h3>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <tbody>
-              {formData.visitantes.filter(v => v.trim() !== '').map((visitante, index) => (
+              {formData.visitantes && formData.visitantes.filter(v => v.trim() !== '').map((visitante, index) => (
                 <tr key={index}>
                   <td style={{ border: '1px solid black', padding: '8px', width: '20%', fontWeight: 'bold', backgroundColor: 'white', color: 'black' }}>
                     Visitante {index + 1}:
@@ -280,7 +463,7 @@ const PrintButton = ({ formData }) => {
 
         {/* Horarios de sucursales */}
         <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'black' }}>
             ACTIVIDADES REALIZADAS
           </h3>
           
@@ -385,13 +568,13 @@ const PrintButton = ({ formData }) => {
 
         {/* Documentación */}
         <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', color: 'black' }}>
             DOCUMENTACIÓN
           </h3>
           
           {/* Firma del responsable */}
           <div style={{ marginBottom: '15px' }}>
-            <p style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '5px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '5px', color: 'black' }}>
               FIRMA Y ACLARACIÓN DE LA PERSONA RESPONSABLE DE LA DOCUMENTACIÓN (Manual Administraciones):
             </p>
             <div style={{ border: '1px solid black', padding: '10px', height: '60px', textAlign: 'center', backgroundColor: 'white' }}>
@@ -408,7 +591,7 @@ const PrintButton = ({ formData }) => {
           {/* Documentos entregados */}
           {formData.documentacion?.entregados && formData.documentacion.entregados.some(doc => doc.nombre) && (
             <div style={{ marginBottom: '15px' }}>
-              <h4 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '5px' }}>
+              <h4 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '5px', color: 'black' }}>
                 Documentos ENTREGADOS
               </h4>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -445,16 +628,16 @@ const PrintButton = ({ formData }) => {
           {/* Documentos recibidos */}
           {formData.documentacion?.recibidos && formData.documentacion.recibidos.some(doc => doc.nombre) && (
             <div style={{ marginBottom: '15px' }}>
-              <h4 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '5px' }}>
+              <h4 style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '5px', color: 'black' }}>
                 Documentos RECIBIDOS
               </h4>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ backgroundColor: '#f9f9f9' }}>
-                    <th style={{ border: '1px solid #ddd', padding: '8px', fontSize: '10px' }}>
+                  <tr style={{ backgroundColor: 'white', color: 'black' }}>
+                    <th style={{ border: '1px solid black', padding: '8px', fontSize: '10px', backgroundColor: 'white', color: 'black' }}>
                       ESCRIBA EL NOMBRE DEL DOCUMENTO QUE USTED RECIBE
                     </th>
-                    <th style={{ border: '1px solid #ddd', padding: '8px', fontSize: '10px' }}>
+                    <th style={{ border: '1px solid black', padding: '8px', fontSize: '10px', backgroundColor: 'white', color: 'black' }}>
                       FIRMA Y ACLARACIÓN de quien recibió la documentación
                     </th>
                   </tr>
@@ -462,13 +645,13 @@ const PrintButton = ({ formData }) => {
                 <tbody>
                   {formData.documentacion.recibidos.filter(doc => doc.nombre).map((doc, index) => (
                     <tr key={index}>
-                      <td style={{ border: '1px solid #ddd', padding: '8px' }}>{doc.nombre}</td>
-                      <td style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'center', height: '50px' }}>
+                      <td style={{ border: '1px solid black', padding: '8px', backgroundColor: 'white', color: 'black' }}>{doc.nombre}</td>
+                      <td style={{ border: '1px solid black', padding: '8px', textAlign: 'center', height: '50px', backgroundColor: 'white', color: 'black' }}>
                         {doc.firmaRecibio && (
                           <img 
                             src={doc.firmaRecibio} 
                             alt={`Firma recibido ${index}`} 
-                            style={{ maxWidth: '100%', maxHeight: '40px' }}
+                            style={{ maxWidth: '100%', maxHeight: '40px', filter: 'grayscale(100%)' }}
                           />
                         )}
                       </td>
