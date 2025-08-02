@@ -146,10 +146,10 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">
+      <h1 className="text-2xl font-bold text-black mb-4">
         REGISTRO DE VISITAS
       </h1>
-      <p className="text-sm text-gray-600 mb-6">
+      <p className="text-sm text-black mb-6">
         Para completar este formulario utilice como referencia el instructivo
         "I-RD-01" disponible en la carpeta Calidad Genéricos/Instructivos
       </p>
@@ -165,7 +165,7 @@ export default function Home() {
             onChange={handleChange}
             className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">Seleccione una empresa</option>
+            <option className="text-black" value="">Seleccione una empresa</option>
             {empresas.map((empresa) => (
               <option key={empresa} value={empresa}>
                 {empresa}
@@ -278,7 +278,7 @@ export default function Home() {
         </div>
       </div>
 
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">
+      <h2 className="text-xl font-semibold text-black mb-4">
         ACTIVIDADES REALIZADAS
       </h2>
 
@@ -288,19 +288,19 @@ export default function Home() {
             <tr>
               <th
                 colSpan="2"
-                className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
               >
                 HORARIO DE INGRESO A LA SUCURSAL 1:
               </th>
               <th
                 colSpan="2"
-                className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
               >
                 HORARIO DE EGRESO DE LA SUCURSAL 1:
               </th>
               <th
                 colSpan="2"
-                className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
               >
                 FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 1:
               </th>
@@ -350,19 +350,19 @@ export default function Home() {
             <tr>
               <th
                 colSpan="2"
-                className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
               >
                 HORARIO DE INGRESO A LA SUCURSAL 2:
               </th>
               <th
                 colSpan="2"
-                className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
               >
                 HORARIO DE EGRESO DE LA SUCURSAL 2:
               </th>
               <th
                 colSpan="2"
-                className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
               >
                 FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 2:
               </th>
@@ -410,19 +410,19 @@ export default function Home() {
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                 HS. INICIO
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                 HS. FINALIZACION
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                 AREA/SECTOR DE LA SUCURSAL
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                 DESCRIPCIÓN DE LA ACTIVIDAD
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                 ¿ACTIVIDAD FINALIZADA? (S)/NO)
               </th>
             </tr>
@@ -494,7 +494,7 @@ export default function Home() {
         </button>
       </div>
 
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">
+      <h2 className="text-xl font-semibold text-black mb-4">
         DOCUMENTACIÓN
       </h2>
 
@@ -534,10 +534,10 @@ export default function Home() {
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                 ESCRIBA EL NOMBRE DEL DOCUMENTO QUE USTED ENTREGA
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                 FIRMA Y ACLARACIÓN de quien recibió la documentación
               </th>
             </tr>
@@ -602,10 +602,10 @@ export default function Home() {
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                 ESCRIBA EL NOMBRE DEL DOCUMENTO QUE USTED RECIBE
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                 FIRMA Y ACLARACIÓN de quien recibió la documentación
               </th>
             </tr>

@@ -27,22 +27,11 @@ const PrintButton = ({ formData }) => {
         zIndex: printContent.style.zIndex
       };
 
-       // Ajustar estilos para móvil
-      printContent.style.position = 'fixed';
-      printContent.style.left = '0';
-      printContent.style.top = '0';
-      printContent.style.width = '100%';
-      printContent.style.height = 'auto';
+      // Hacer visible para captura
+      printContent.style.position = 'static';
+      printContent.style.left = 'auto';
       printContent.style.visibility = 'visible';
       printContent.style.zIndex = '9999';
-      printContent.style.padding = '10px';
-      printContent.style.backgroundColor = 'white';
-
-      // Hacer visible para captura
-      // printContent.style.position = 'static';
-      // printContent.style.left = 'auto';
-      // printContent.style.visibility = 'visible';
-      // printContent.style.zIndex = '9999';
 
       // Esperar un momento para que se renderice
       setTimeout(() => {
@@ -139,17 +128,12 @@ const PrintButton = ({ formData }) => {
           printWindow.document.close();
         } else {
           // Método alternativo con iframe
-          // const iframe = document.createElement('iframe');
-          // iframe.style.position = 'absolute';
-          // iframe.style.left = '-9999px';
-          // iframe.style.width = '210mm';
-          // iframe.style.height = '297mm';
           const iframe = document.createElement('iframe');
-          iframe.style.position = 'fixed';
-          iframe.style.width = '1px';
-          iframe.style.height = '1px';
-          iframe.style.left = '-1px';
-          iframe.style.top = '-1px';
+          iframe.style.position = 'absolute';
+          iframe.style.left = '-9999px';
+          iframe.style.width = '210mm';
+          iframe.style.height = '297mm';
+          
           document.body.appendChild(iframe);
           
           const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -170,10 +154,9 @@ const PrintButton = ({ formData }) => {
           printContent.style.position = originalStyles.position;
           printContent.style.left = originalStyles.left;
           printContent.style.visibility = originalStyles.visibility;
-          printContent.style.width = originalStyles.width;
-          printContent.style.height = originalStyles.height;
           printContent.style.zIndex = originalStyles.zIndex;
-          printContent.style.padding = '';
+          
+          URL.revokeObjectURL(url);
           setIsGenerating(false);
         }, 2000);
 
@@ -213,28 +196,40 @@ const PrintButton = ({ formData }) => {
            visitantesCount > 4 || hasFirmas;
   };
 
-  // Función para detectar páginas vacías en canvas
-  const isPageEmpty = (canvas, pageStartY, pageHeight) => {
+  // Función para detectar páginas vacías en canvas - MEJORADA
+  const isPageEmpty = (canvas, startY, height) => {
     const ctx = canvas.getContext('2d');
-    const imageData = ctx.getImageData(0, pageStartY, canvas.width, pageHeight);
-    const pixels = imageData.data;
     
-    // Verificar si todos los píxeles son blancos (255, 255, 255) o transparentes
-    for (let i = 0; i < pixels.length; i += 4) {
-      const r = pixels[i];
-      const g = pixels[i + 1];
-      const b = pixels[i + 2];
-      const a = pixels[i + 3];
+    // Asegurar que los valores estén dentro de los límites del canvas
+    const actualStartY = Math.max(0, Math.floor(startY));
+    const actualHeight = Math.min(Math.floor(height), canvas.height - actualStartY);
+    
+    if (actualHeight <= 0) return true;
+    
+    try {
+      const imageData = ctx.getImageData(0, actualStartY, canvas.width, actualHeight);
+      const pixels = imageData.data;
       
-      // Si encuentra un píxel que no sea blanco, la página no está vacía
-      if (a > 0 && (r !== 255 || g !== 255 || b !== 255)) {
-        return false;
+      // Muestrear píxeles para mejor rendimiento (cada 4 píxeles)
+      for (let i = 0; i < pixels.length; i += 16) { // Saltar 4 píxeles (4 * 4 = 16)
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
+        const a = pixels[i + 3];
+        
+        // Si encuentra un píxel que no sea blanco y tenga opacidad, la página no está vacía
+        if (a > 128 && (r < 250 || g < 250 || b < 250)) {
+          return false;
+        }
       }
+      return true;
+    } catch (error) {
+      console.warn('Error al verificar página vacía:', error);
+      return false; // En caso de error, asumir que no está vacía
     }
-    return true;
   };
 
-  // Función para generar PDF - MEJORADA con detección de páginas vacías
+  // Función para generar PDF - OPTIMIZADA para móviles
   const handleSavePDF = async () => {
     setIsGenerating(true);
     try {
@@ -244,77 +239,145 @@ const PrintButton = ({ formData }) => {
         throw new Error('No se encontró el elemento para generar PDF');
       }
 
-      // Hacer visible temporalmente
-      const originalStyles = {
-        position: element.style.position,
-        left: element.style.left,
-        visibility: element.style.visibility,
-        width: element.style.width,
-        height: element.style.height
-      };
+      // Crear un contenedor temporal visible para móviles
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'fixed';
+      tempContainer.style.top = '0';
+      tempContainer.style.left = '0';
+      tempContainer.style.width = '794px'; // A4 width en pixels (210mm * 3.78)
+      tempContainer.style.backgroundColor = 'white';
+      tempContainer.style.zIndex = '10000';
+      tempContainer.style.padding = '20px';
+      tempContainer.style.fontSize = '12px';
+      tempContainer.style.lineHeight = '1.4';
+      tempContainer.style.fontFamily = 'Arial, sans-serif';
+      tempContainer.style.color = 'black';
+      tempContainer.style.visibility = 'visible';
       
-      element.style.position = 'static';
-      element.style.left = 'auto';
-      element.style.visibility = 'visible';
-      element.style.width = '210mm';
-      element.style.height = 'auto';
+      // Clonar el contenido
+      const clonedElement = element.cloneNode(true);
+      
+      // Limpiar estilos que puedan interferir
+      clonedElement.style.position = 'static';
+      clonedElement.style.left = 'auto';
+      clonedElement.style.visibility = 'visible';
+      clonedElement.style.width = 'auto';
+      clonedElement.style.height = 'auto';
+      clonedElement.style.backgroundColor = 'white';
+      clonedElement.style.color = 'black';
+      
+      tempContainer.appendChild(clonedElement);
+      document.body.appendChild(tempContainer);
 
-      // Esperar a que se renderice
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Esperar a que se renderice completamente
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
+      // Capturar con configuración específica para móviles
+      const canvas = await html2canvas(tempContainer, {
+        scale: 1.5, // Reducir escala en móviles para mejor rendimiento
         useCORS: true,
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
-        width: element.offsetWidth,
-        height: element.offsetHeight
+        width: 794, // Ancho fijo A4
+        height: tempContainer.scrollHeight,
+        windowWidth: 794,
+        windowHeight: tempContainer.scrollHeight,
+        foreignObjectRendering: true,
+        removeContainer: false
       });
 
-      // Restaurar estilos
-      element.style.position = originalStyles.position;
-      element.style.left = originalStyles.left;
-      element.style.visibility = originalStyles.visibility;
-      element.style.width = originalStyles.width;
-      element.style.height = originalStyles.height;
+      // Limpiar el contenedor temporal
+      document.body.removeChild(tempContainer);
 
-      const imgData = canvas.toDataURL('image/png', 1.0);
+      // Crear PDF con dimensiones A4 correctas
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4'
+        format: 'a4',
+        compress: true
       });
 
-      const imgWidth = 210;
-      const pageHeight = 295;
-      const canvasPageHeight = (pageHeight * canvas.width) / imgWidth; // Altura de página en píxeles del canvas
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const pdfWidth = 210; // A4 width en mm
+      const pdfHeight = 297; // A4 height en mm
+      const margin = 10; // Márgenes en mm
+      const contentWidth = pdfWidth - (margin * 2);
+      const contentHeight = pdfHeight - (margin * 2);
       
-      // Primera página (siempre se incluye)
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+      // Calcular escalado para que el contenido quepa correctamente
+      const canvasAspectRatio = canvas.width / canvas.height;
+      const contentAspectRatio = contentWidth / contentHeight;
       
-      let heightLeft = imgHeight - pageHeight;
-      let currentPageStart = canvasPageHeight; // Posición Y en el canvas donde empieza la segunda página
-      let position = heightLeft - imgHeight;
+      let finalWidth, finalHeight;
+      
+      if (canvasAspectRatio > contentAspectRatio) {
+        // Canvas es más ancho, ajustar por ancho
+        finalWidth = contentWidth;
+        finalHeight = contentWidth / canvasAspectRatio;
+      } else {
+        // Canvas es más alto, ajustar por alto
+        finalHeight = contentHeight;
+        finalWidth = contentHeight * canvasAspectRatio;
+      }
+      
+      // Centrar el contenido
+      const xOffset = margin + (contentWidth - finalWidth) / 2;
+      const yOffset = margin;
 
-      // Solo agregar páginas adicionales si hay contenido y no están vacías
-      while (heightLeft >= 0) {
-        // Verificar si esta página tiene contenido
-        const pageEndY = Math.min(currentPageStart + canvasPageHeight, canvas.height);
-        const isEmpty = isPageEmpty(canvas, Math.floor(currentPageStart), Math.floor(pageEndY - currentPageStart));
+      const imgData = canvas.toDataURL('image/png', 0.95);
+      
+      // Verificar si necesita múltiples páginas
+      const totalHeightMM = (canvas.height * finalWidth) / canvas.width;
+      
+      if (totalHeightMM <= contentHeight) {
+        // Cabe en una página
+        pdf.addImage(imgData, 'PNG', xOffset, yOffset, finalWidth, finalHeight);
+      } else {
+        // Necesita múltiples páginas
+        const pageHeightInCanvas = (contentHeight * canvas.width) / finalWidth;
+        let currentY = 0;
+        let pageNumber = 1;
         
-        if (!isEmpty) {
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        } else {
-          console.log(`Página vacía detectada, omitiendo...`);
-          break; // Si encontramos una página vacía, no agregamos más páginas
+        while (currentY < canvas.height) {
+          if (pageNumber > 1) {
+            // Verificar si la página tiene contenido
+            const remainingHeight = Math.min(pageHeightInCanvas, canvas.height - currentY);
+            const isEmpty = isPageEmpty(canvas, currentY, remainingHeight);
+            
+            if (isEmpty) {
+              console.log(`Página ${pageNumber} vacía, omitiendo...`);
+              break;
+            }
+            
+            pdf.addPage();
+          }
+          
+          // Calcular la altura de esta página
+          const pageContentHeight = Math.min(pageHeightInCanvas, canvas.height - currentY);
+          const scaledHeight = (pageContentHeight * finalWidth) / canvas.width;
+          
+          // Crear canvas temporal para esta página
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = pageContentHeight;
+          
+          const pageCtx = pageCanvas.getContext('2d');
+          pageCtx.fillStyle = 'white';
+          pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          
+          // Copiar la sección correspondiente
+          pageCtx.drawImage(
+            canvas,
+            0, currentY, canvas.width, pageContentHeight,
+            0, 0, canvas.width, pageContentHeight
+          );
+          
+          const pageImgData = pageCanvas.toDataURL('image/png', 0.95);
+          pdf.addImage(pageImgData, 'PNG', xOffset, yOffset, finalWidth, scaledHeight);
+          
+          currentY += pageHeightInCanvas;
+          pageNumber++;
         }
-        
-        heightLeft -= pageHeight;
-        position = heightLeft - imgHeight;
-        currentPageStart += canvasPageHeight;
       }
 
       const fileName = `registro_visitas_${formData.empresa || 'sin_empresa'}_${formData.fechaVisita || 'sin_fecha'}.pdf`;
@@ -322,7 +385,7 @@ const PrintButton = ({ formData }) => {
       
     } catch (error) {
       console.error('Error al generar PDF:', error);
-      alert('Error al generar el PDF');
+      alert('Error al generar el PDF. Inténtelo de nuevo.');
     } finally {
       setIsGenerating(false);
     }
@@ -331,20 +394,31 @@ const PrintButton = ({ formData }) => {
   return (
     <>
       <style jsx global>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          .print-content, .print-content * {
-            visibility: visible;
-          }
-          .print-content {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 10px;
-          }
+        * {
+          color: black !important;
+        }
+        
+        button {
+          color: white !important;
+        }
+        
+        button:disabled {
+          color: #9CA3AF !important;
+        }
+        
+        .bg-blue-500, .bg-blue-600, .bg-green-500, .bg-green-600 {
+          color: white !important;
+        }
+
+        /* Estilos para firmas táctiles */
+        canvas {
+          touch-action: none;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          -khtml-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
         }
       `}</style>
       
