@@ -229,154 +229,356 @@ const PrintButton = ({ formData }) => {
     }
   };
 
-  // Función para generar PDF - OPTIMIZADA para móviles
+  // Función para crear contenido HTML visible para PDF
+  const createPrintableContent = () => {
+    return `
+      <div style="width: 794px; background: white; color: black; font-family: Arial, sans-serif; font-size: 12px; line-height: 1.4; padding: 20px;">
+        <!-- Encabezado -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 style="font-size: 18px; font-weight: bold; margin: 0 0 10px 0; color: black;">
+            REGISTRO DE VISITAS
+          </h1>
+          <p style="font-size: 10px; margin: 0; color: black;">
+            Para completar este formulario utilice como referencia el instructivo
+            "I-RD-01" disponible en la carpeta Calidad Genéricos/Instructivos
+          </p>
+        </div>
+
+        <!-- Información básica -->
+        <div style="margin-bottom: 20px;">
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+            <tbody>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px; font-weight: bold; width: 30%; background-color: white; color: black;">
+                  EMPRESA A LA QUE VISITA:
+                </td>
+                <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">
+                  ${formData.empresa || ''}
+                </td>
+                <td style="border: 1px solid black; padding: 8px; font-weight: bold; width: 20%; background-color: white; color: black;">
+                  FECHA DE VISITA:
+                </td>
+                <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">
+                  ${formData.fechaVisita || ''}
+                </td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px; font-weight: bold; background-color: white; color: black;">
+                  AREA/S (que realizan la visita):
+                </td>
+                <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">
+                  ${formData.area || ''}
+                </td>
+                <td style="border: 1px solid black; padding: 8px; font-weight: bold; background-color: white; color: black;">
+                  Sucursal o Localidad:
+                </td>
+                <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">
+                  ${formData.sucursal || ''}
+                </td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px; font-weight: bold; background-color: white; color: black;">
+                  Provincia:
+                </td>
+                <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">
+                  ${formData.provincia || ''}
+                </td>
+                <td style="border: 1px solid black; padding: 8px; font-weight: bold; background-color: white; color: black;">
+                  HORARIO DE SALIDA DE ADMINISTRACIÓN:
+                </td>
+                <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">
+                  ${formData.horarioSaludo || ''}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Visitantes -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: black;">
+            NOMBRE Y APELLIDO: (personas que realizan la visita)
+          </h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tbody>
+              ${formData.visitantes ? formData.visitantes.filter(v => v.trim() !== '').map((visitante, index) => `
+                <tr>
+                  <td style="border: 1px solid black; padding: 8px; width: 20%; font-weight: bold; background-color: white; color: black;">
+                    Visitante ${index + 1}:
+                  </td>
+                  <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">
+                    ${visitante}
+                  </td>
+                </tr>
+              `).join('') : ''}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Actividades realizadas -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: black;">
+            ACTIVIDADES REALIZADAS
+          </h3>
+          
+          <!-- Sucursal 1 -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+            <thead>
+              <tr>
+                <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                  HORARIO DE INGRESO A LA SUCURSAL 1
+                </th>
+                <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                  HORARIO DE EGRESO DE LA SUCURSAL 1
+                </th>
+                <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                  FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 1
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px; text-align: center; background-color: white; color: black;">
+                  ${formData.sucursal1?.ingreso || ''}
+                </td>
+                <td style="border: 1px solid black; padding: 8px; text-align: center; background-color: white; color: black;">
+                  ${formData.sucursal1?.egreso || ''}
+                </td>
+                <td style="border: 1px solid black; padding: 8px; text-align: center; height: 60px; background-color: white; color: black;">
+                  ${formData.sucursal1?.firma ? `<img src="${formData.sucursal1.firma}" style="max-width: 100%; max-height: 50px; filter: grayscale(100%);">` : ''}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Sucursal 2 -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+            <thead>
+              <tr>
+                <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                  HORARIO DE INGRESO A LA SUCURSAL 2
+                </th>
+                <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                  HORARIO DE EGRESO DE LA SUCURSAL 2
+                </th>
+                <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                  FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 2
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px; text-align: center; background-color: white; color: black;">
+                  ${formData.sucursal2?.ingreso || ''}
+                </td>
+                <td style="border: 1px solid black; padding: 8px; text-align: center; background-color: white; color: black;">
+                  ${formData.sucursal2?.egreso || ''}
+                </td>
+                <td style="border: 1px solid black; padding: 8px; text-align: center; height: 60px; background-color: white; color: black;">
+                  ${formData.sucursal2?.firma ? `<img src="${formData.sucursal2.firma}" style="max-width: 100%; max-height: 50px; filter: grayscale(100%);">` : ''}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Actividades detalladas -->
+          ${formData.actividades && formData.actividades.length > 0 ? `
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
+              <thead>
+                <tr>
+                  <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">HS. INICIO</th>
+                  <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">HS. FINALIZACIÓN</th>
+                  <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">ÁREA/SECTOR DE LA SUCURSAL</th>
+                  <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">DESCRIPCIÓN DE LA ACTIVIDAD</th>
+                  <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">¿ACTIVIDAD FINALIZADA? (S/NO)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${formData.actividades.map(actividad => `
+                  <tr>
+                    <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.inicio || ''}</td>
+                    <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.fin || ''}</td>
+                    <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.areaSector || ''}</td>
+                    <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.descripcion || ''}</td>
+                    <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.finalizada || ''}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : ''}
+        </div>
+
+        <!-- Documentación -->
+        <div style="margin-bottom: 20px;">
+          <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: black;">
+            DOCUMENTACIÓN
+          </h3>
+          
+          <!-- Firma del responsable -->
+          <div style="margin-bottom: 15px;">
+            <p style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: black;">
+              FIRMA Y ACLARACIÓN DE LA PERSONA RESPONSABLE DE LA DOCUMENTACIÓN (Manual Administraciones):
+            </p>
+            <div style="border: 1px solid black; padding: 10px; height: 60px; text-align: center; background-color: white;">
+              ${formData.documentacion?.firma ? `<img src="${formData.documentacion.firma}" style="max-width: 100%; max-height: 50px; filter: grayscale(100%);">` : ''}
+            </div>
+          </div>
+
+          <!-- Documentos entregados -->
+          ${formData.documentacion?.entregados && formData.documentacion.entregados.some(doc => doc.nombre) ? `
+            <div style="margin-bottom: 15px;">
+              <h4 style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: black;">
+                Documentos ENTREGADOS
+              </h4>
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                      ESCRIBA EL NOMBRE DEL DOCUMENTO QUE USTED ENTREGA
+                    </th>
+                    <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                      FIRMA Y ACLARACIÓN de quien recibió la documentación
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${formData.documentacion.entregados.filter(doc => doc.nombre).map(doc => `
+                    <tr>
+                      <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${doc.nombre}</td>
+                      <td style="border: 1px solid black; padding: 8px; text-align: center; height: 50px; background-color: white; color: black;">
+                        ${doc.firmaRecibio ? `<img src="${doc.firmaRecibio}" style="max-width: 100%; max-height: 40px; filter: grayscale(100%);">` : ''}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          <!-- Documentos recibidos -->
+          ${formData.documentacion?.recibidos && formData.documentacion.recibidos.some(doc => doc.nombre) ? `
+            <div style="margin-bottom: 15px;">
+              <h4 style="font-size: 12px; font-weight: bold; margin-bottom: 5px; color: black;">
+                Documentos RECIBIDOS
+              </h4>
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr>
+                    <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                      ESCRIBA EL NOMBRE DEL DOCUMENTO QUE USTED RECIBE
+                    </th>
+                    <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
+                      FIRMA Y ACLARACIÓN de quien recibió la documentación
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${formData.documentacion.recibidos.filter(doc => doc.nombre).map(doc => `
+                    <tr>
+                      <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${doc.nombre}</td>
+                      <td style="border: 1px solid black; padding: 8px; text-align: center; height: 50px; background-color: white; color: black;">
+                        ${doc.firmaRecibio ? `<img src="${doc.firmaRecibio}" style="max-width: 100%; max-height: 40px; filter: grayscale(100%);">` : ''}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Horario de llegada -->
+        <div style="margin-bottom: 20px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tbody>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px; font-weight: bold; width: 40%; background-color: white; color: black;">
+                  HORARIO DE LLEGADA A LA ADMINISTRACIÓN:
+                </td>
+                <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">
+                  ${formData.horarioLlegada || ''}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  };
+
+  // Función para generar PDF - SIMPLIFICADA y FUNCIONAL
   const handleSavePDF = async () => {
     setIsGenerating(true);
     try {
-      const element = componentRef.current;
-      
-      if (!element) {
-        throw new Error('No se encontró el elemento para generar PDF');
-      }
-
-      // Crear un contenedor temporal visible para móviles
+      // Crear contenedor temporal completamente visible
       const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'fixed';
+      tempContainer.style.position = 'absolute';
       tempContainer.style.top = '0';
       tempContainer.style.left = '0';
-      tempContainer.style.width = '794px'; // A4 width en pixels (210mm * 3.78)
-      tempContainer.style.backgroundColor = 'white';
-      tempContainer.style.zIndex = '10000';
-      tempContainer.style.padding = '20px';
-      tempContainer.style.fontSize = '12px';
-      tempContainer.style.lineHeight = '1.4';
-      tempContainer.style.fontFamily = 'Arial, sans-serif';
-      tempContainer.style.color = 'black';
-      tempContainer.style.visibility = 'visible';
+      tempContainer.style.zIndex = '9999';
+      tempContainer.style.background = 'white';
+      tempContainer.innerHTML = createPrintableContent();
       
-      // Clonar el contenido
-      const clonedElement = element.cloneNode(true);
-      
-      // Limpiar estilos que puedan interferir
-      clonedElement.style.position = 'static';
-      clonedElement.style.left = 'auto';
-      clonedElement.style.visibility = 'visible';
-      clonedElement.style.width = 'auto';
-      clonedElement.style.height = 'auto';
-      clonedElement.style.backgroundColor = 'white';
-      clonedElement.style.color = 'black';
-      
-      tempContainer.appendChild(clonedElement);
       document.body.appendChild(tempContainer);
 
-      // Esperar a que se renderice completamente
+      // Esperar a que las imágenes se carguen
+      const images = tempContainer.querySelectorAll('img');
+      await Promise.all(Array.from(images).map(img => {
+        return new Promise((resolve) => {
+          if (img.complete) {
+            resolve();
+          } else {
+            img.onload = resolve;
+            img.onerror = resolve;
+          }
+        });
+      }));
+
+      // Esperar un poco más para asegurar el renderizado
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Capturar con configuración específica para móviles
+      // Capturar con html2canvas
       const canvas = await html2canvas(tempContainer, {
-        scale: 1.5, // Reducir escala en móviles para mejor rendimiento
+        scale: 1,
         useCORS: true,
         allowTaint: true,
         logging: false,
         backgroundColor: '#ffffff',
-        width: 794, // Ancho fijo A4
-        height: tempContainer.scrollHeight,
-        windowWidth: 794,
-        windowHeight: tempContainer.scrollHeight,
-        foreignObjectRendering: true,
-        removeContainer: false
+        width: 794,
+        height: tempContainer.offsetHeight
       });
 
-      // Limpiar el contenedor temporal
+      // Limpiar contenedor temporal
       document.body.removeChild(tempContainer);
 
-      // Crear PDF con dimensiones A4 correctas
+      // Crear PDF simple y directo
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
-        format: 'a4',
-        compress: true
+        format: 'a4'
       });
 
-      const pdfWidth = 210; // A4 width en mm
-      const pdfHeight = 297; // A4 height en mm
-      const margin = 10; // Márgenes en mm
-      const contentWidth = pdfWidth - (margin * 2);
-      const contentHeight = pdfHeight - (margin * 2);
+      const imgData = canvas.toDataURL('image/png', 0.9);
       
-      // Calcular escalado para que el contenido quepa correctamente
-      const canvasAspectRatio = canvas.width / canvas.height;
-      const contentAspectRatio = contentWidth / contentHeight;
+      // Calcular dimensiones para A4
+      const pdfWidth = 210;
+      const pdfHeight = 297;
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      let finalWidth, finalHeight;
-      
-      if (canvasAspectRatio > contentAspectRatio) {
-        // Canvas es más ancho, ajustar por ancho
-        finalWidth = contentWidth;
-        finalHeight = contentWidth / canvasAspectRatio;
+      // Si cabe en una página
+      if (imgHeight <= pdfHeight) {
+        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
       } else {
-        // Canvas es más alto, ajustar por alto
-        finalHeight = contentHeight;
-        finalWidth = contentHeight * canvasAspectRatio;
-      }
-      
-      // Centrar el contenido
-      const xOffset = margin + (contentWidth - finalWidth) / 2;
-      const yOffset = margin;
-
-      const imgData = canvas.toDataURL('image/png', 0.95);
-      
-      // Verificar si necesita múltiples páginas
-      const totalHeightMM = (canvas.height * finalWidth) / canvas.width;
-      
-      if (totalHeightMM <= contentHeight) {
-        // Cabe en una página
-        pdf.addImage(imgData, 'PNG', xOffset, yOffset, finalWidth, finalHeight);
-      } else {
-        // Necesita múltiples páginas
-        const pageHeightInCanvas = (contentHeight * canvas.width) / finalWidth;
-        let currentY = 0;
-        let pageNumber = 1;
+        // Múltiples páginas
+        const pageHeight = pdfHeight;
+        const totalPages = Math.ceil(imgHeight / pageHeight);
         
-        while (currentY < canvas.height) {
-          if (pageNumber > 1) {
-            // Verificar si la página tiene contenido
-            const remainingHeight = Math.min(pageHeightInCanvas, canvas.height - currentY);
-            const isEmpty = isPageEmpty(canvas, currentY, remainingHeight);
-            
-            if (isEmpty) {
-              console.log(`Página ${pageNumber} vacía, omitiendo...`);
-              break;
-            }
-            
-            pdf.addPage();
-          }
+        for (let page = 0; page < totalPages; page++) {
+          if (page > 0) pdf.addPage();
           
-          // Calcular la altura de esta página
-          const pageContentHeight = Math.min(pageHeightInCanvas, canvas.height - currentY);
-          const scaledHeight = (pageContentHeight * finalWidth) / canvas.width;
-          
-          // Crear canvas temporal para esta página
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width = canvas.width;
-          pageCanvas.height = pageContentHeight;
-          
-          const pageCtx = pageCanvas.getContext('2d');
-          pageCtx.fillStyle = 'white';
-          pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-          
-          // Copiar la sección correspondiente
-          pageCtx.drawImage(
-            canvas,
-            0, currentY, canvas.width, pageContentHeight,
-            0, 0, canvas.width, pageContentHeight
-          );
-          
-          const pageImgData = pageCanvas.toDataURL('image/png', 0.95);
-          pdf.addImage(pageImgData, 'PNG', xOffset, yOffset, finalWidth, scaledHeight);
-          
-          currentY += pageHeightInCanvas;
-          pageNumber++;
+          const yOffset = -(page * pageHeight);
+          pdf.addImage(imgData, 'PNG', 0, yOffset, imgWidth, imgHeight);
         }
       }
 
