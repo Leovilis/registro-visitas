@@ -386,7 +386,7 @@ function App() {
                     className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">-</option>
-                    <option value="S">S</option>
+                    <option value="SI">SI</option>
                     <option value="NO">NO</option>
                   </select>
                 </td>
