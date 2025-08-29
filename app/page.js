@@ -1,4 +1,4 @@
-'use client' 
+"use client";
 
 import { useState, useEffect } from "react";
 import SignaturePad from "../src/components/SignaturePad";
@@ -143,13 +143,61 @@ export default function Home() {
       setFormData((prev) => ({ ...prev, [field]: time }));
     }
   };
+  const handleClearForm = () => {
+    if (
+      window.confirm(
+        "¿Estás seguro de que quieres limpiar el formulario? Se perderán todos los datos."
+      )
+    ) {
+      setFormData({
+        empresa: "",
+        fechaVisita: new Date().toISOString().split("T")[0],
+        area: "",
+        sucursal: "",
+        provincia: "",
+        horarioSaludo: "",
+        visitantes: ["", "", "", "", "", ""],
+        sucursal1: {
+          ingreso: "",
+          egreso: "",
+          firma: "",
+        },
+        sucursal2: {
+          ingreso: "",
+          egreso: "",
+          firma: "",
+        },
+        actividades: [
+          {
+            inicio: "",
+            fin: "",
+            areaSector: "",
+            descripcion: "",
+            finalizada: "",
+          },
+        ],
+        documentacion: {
+          firma: "",
+          entregados: [{ nombre: "", firmaRecibio: "" }],
+          recibidos: [{ nombre: "", firmaRecibio: "" }],
+        },
+        horarioLlegada: "",
+      });
+      alert("Formulario limpiado correctamente");
+    }
+  };
 
+  // Función para crear nueva planilla
+const handleNewForm = () => {
+    window.open(window.location.href, '_blank');
+  };
+  
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold text-black mb-4">
+      <h1 className="text-2xl text-center font-bold text-black mb-4">
         REGISTRO DE VISITAS
       </h1>
-      <p className="text-sm text-black mb-6">
+      <p className="text-sm text-center text-black mb-6">
         Para completar este formulario utilice como referencia el instructivo
         "I-RD-01" disponible en la carpeta Calidad Genéricos/Instructivos
       </p>
@@ -165,7 +213,9 @@ export default function Home() {
             onChange={handleChange}
             className="w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
-            <option className="text-black" value="">Seleccione una empresa</option>
+            <option className="text-black" value="">
+              Seleccione una empresa
+            </option>
             {empresas.map((empresa) => (
               <option key={empresa} value={empresa}>
                 {empresa}
@@ -282,7 +332,7 @@ export default function Home() {
         ACTIVIDADES REALIZADAS
       </h2>
 
-      <div className="overflow-x-auto mb-6">
+      {/* <div className="overflow-x-auto mb-6">
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
           <thead className="bg-gray-50 ">
             <tr>
@@ -492,11 +542,438 @@ export default function Home() {
         >
           + Agregar Actividad
         </button>
-      </div>
+      </div> */}
+      <div className="overflow-x-auto mb-6">
+        <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
+                HORARIO DE INGRESO A LA SUCURSAL 1:
+              </th>
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
+                HORARIO DE EGRESO DE LA SUCURSAL 1:
+              </th>
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
+                FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 1:
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            <tr>
+              <td colSpan="2" className="px-4 py-2 border border-gray-200">
+                <div className="flex justify-center md:justify-start">
+                  <TimeButton
+                    field="sucursal-1-ingreso"
+                    onSetTime={handleSetTime}
+                    currentTime={formData.sucursal1.ingreso}
+                  />
+                </div>
+              </td>
+              <td colSpan="2" className="px-4 py-2 border border-gray-200">
+                <div className="flex justify-center md:justify-start">
+                  <TimeButton
+                    field="sucursal-1-egreso"
+                    onSetTime={handleSetTime}
+                    currentTime={formData.sucursal1.egreso}
+                  />
+                </div>
+              </td>
+              <td colSpan="2" className="px-4 py-2 border border-gray-200">
+                <div className="flex justify-center">
+                  {formData.sucursal1.firma ? (
+                    <img
+                      src={formData.sucursal1.firma}
+                      alt="Firma"
+                      className="max-w-full h-16 mx-auto"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowSignaturePad({ show: true, field: "sucursal-1" })
+                      }
+                      className="w-full py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    >
+                      Firmar
+                    </button>
+                  )}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-      <h2 className="text-xl font-semibold text-black mb-4">
-        DOCUMENTACIÓN
-      </h2>
+        <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
+          <thead className="bg-gray-50">
+            <tr>
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
+                HORARIO DE INGRESO A LA SUCURSAL 2:
+              </th>
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
+                HORARIO DE EGRESO DE LA SUCURSAL 2:
+              </th>
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
+                FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 2:
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            <tr>
+              <td colSpan="2" className="px-4 py-2 border border-gray-200">
+                <div className="flex justify-center md:justify-start">
+                  <TimeButton
+                    field="sucursal-2-ingreso"
+                    onSetTime={handleSetTime}
+                    currentTime={formData.sucursal2.ingreso}
+                  />
+                </div>
+              </td>
+              <td colSpan="2" className="px-4 py-2 border border-gray-200">
+                <div className="flex justify-center md:justify-start">
+                  <TimeButton
+                    field="sucursal-2-egreso"
+                    onSetTime={handleSetTime}
+                    currentTime={formData.sucursal2.egreso}
+                  />
+                </div>
+              </td>
+              <td colSpan="2" className="px-4 py-2 border border-gray-200">
+                <div className="flex justify-center">
+                  {formData.sucursal2.firma ? (
+                    <img
+                      src={formData.sucursal2.firma}
+                      alt="Firma"
+                      className="max-w-full h-16 mx-auto"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowSignaturePad({ show: true, field: "sucursal-2" })
+                      }
+                      className="w-full py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    >
+                      Firmar
+                    </button>
+                  )}
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        {/* 
+        <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                HS. INICIO
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                HS. FINALIZACION
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                AREA/SECTOR DE LA SUCURSAL
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                DESCRIPCIÓN DE LA ACTIVIDAD
+              </th>
+              <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                ¿ACTIVIDAD FINALIZADA? (S)/NO)
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {formData.actividades.map((actividad, index) => (
+              <tr key={index}>
+                <td className="px-4 py-2 border border-gray-200">
+                  <div className="flex justify-center md:justify-start">
+                    <TimeButton
+                      field={`actividad-${index}-inicio`}
+                      onSetTime={handleSetTime}
+                      currentTime={actividad.inicio}
+                    />
+                  </div>
+                </td>
+                <td className="px-4 py-2 border border-gray-200">
+                  <div className="flex justify-center md:justify-start">
+                    <TimeButton
+                      field={`actividad-${index}-fin`}
+                      onSetTime={handleSetTime}
+                      currentTime={actividad.fin}
+                    />
+                  </div>
+                </td>
+                <td className="px-4 py-2 border text-gray-700 border-gray-200">
+                  <input
+                    type="text"
+                    value={actividad.areaSector}
+                    onChange={(e) =>
+                      handleActividadChange(index, "areaSector", e.target.value)
+                    }
+                    className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </td>
+                <td className="px-4 py-2 border text-gray-700 border-gray-200">
+                  <input
+                    type="text"
+                    value={actividad.descripcion}
+                    onChange={(e) =>
+                      handleActividadChange(
+                        index,
+                        "descripcion",
+                        e.target.value
+                      )
+                    }
+                    className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </td>
+                <td className="px-4 py-2 border text-gray-700 border-gray-200">
+                  <select
+                    value={actividad.finalizada}
+                    onChange={(e) =>
+                      handleActividadChange(index, "finalizada", e.target.value)
+                    }
+                    className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">-</option>
+                    <option value="SI">SI</option>
+                    <option value="NO">NO</option>
+                  </select>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table> */}
+        <div className="mb-6">
+          {/* Versión Desktop (se mantiene igual) */}
+          <div className="hidden md:block">
+            <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                    HS. INICIO
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                    HS. FINALIZACION
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                    AREA/SECTOR DE LA SUCURSAL
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                    DESCRIPCIÓN DE LA ACTIVIDAD
+                  </th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+                    ¿ACTIVIDAD FINALIZADA? (S)/NO)
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {formData.actividades.map((actividad, index) => (
+                  <tr key={index}>
+                    <td className="px-4 py-2 border border-gray-200">
+                      <div className="flex justify-center md:justify-start">
+                        <TimeButton
+                          field={`actividad-${index}-inicio`}
+                          onSetTime={handleSetTime}
+                          currentTime={actividad.inicio}
+                        />
+                      </div>
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200">
+                      <div className="flex justify-center md:justify-start">
+                        <TimeButton
+                          field={`actividad-${index}-fin`}
+                          onSetTime={handleSetTime}
+                          currentTime={actividad.fin}
+                        />
+                      </div>
+                    </td>
+                    <td className="px-4 py-2 border text-gray-700 border-gray-200">
+                      <input
+                        type="text"
+                        value={actividad.areaSector}
+                        onChange={(e) =>
+                          handleActividadChange(
+                            index,
+                            "areaSector",
+                            e.target.value
+                          )
+                        }
+                        className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border text-gray-700 border-gray-200">
+                      <input
+                        type="text"
+                        value={actividad.descripcion}
+                        onChange={(e) =>
+                          handleActividadChange(
+                            index,
+                            "descripcion",
+                            e.target.value
+                          )
+                        }
+                        className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border text-gray-700 border-gray-200">
+                      <select
+                        value={actividad.finalizada}
+                        onChange={(e) =>
+                          handleActividadChange(
+                            index,
+                            "finalizada",
+                            e.target.value
+                          )
+                        }
+                        className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">-</option>
+                        <option value="SI">SI</option>
+                        <option value="NO">NO</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Versión Mobile */}
+          <div className="md:hidden">
+            {formData.actividades.map((actividad, index) => (
+              <div
+                key={index}
+                className="border border-gray-200 rounded-lg p-4 mb-4 bg-white"
+              >
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  {/* Columna 1: Horarios */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-black uppercase">
+                      HS. INICIO
+                    </div>
+                    <div className="flex justify-center">
+                      <TimeButton
+                        field={`actividad-${index}-inicio`}
+                        onSetTime={handleSetTime}
+                        currentTime={actividad.inicio}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-black uppercase">
+                      HS. FINALIZACION
+                    </div>
+                    <div className="flex justify-center">
+                      <TimeButton
+                        field={`actividad-${index}-fin`}
+                        onSetTime={handleSetTime}
+                        currentTime={actividad.fin}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Área/Sector (debajo en móvil) */}
+                <div className="mb-4">
+                  <div className="text-xs font-medium text-black uppercase mb-1">
+                    AREA/SECTOR DE LA SUCURSAL
+                  </div>
+                  <input
+                    type="text"
+                    value={actividad.areaSector}
+                    onChange={(e) =>
+                      handleActividadChange(index, "areaSector", e.target.value)
+                    }
+                    className="w-full p-2 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Columna 2: Descripción y Finalizada */}
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-black uppercase">
+                      DESCRIPCIÓN
+                    </div>
+                    <input
+                      type="text"
+                      value={actividad.descripcion}
+                      onChange={(e) =>
+                        handleActividadChange(
+                          index,
+                          "descripcion",
+                          e.target.value
+                        )
+                      }
+                      className="w-full p-2 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="text-xs font-medium text-black uppercase">
+                      FINALIZADA (S/NO)
+                    </div>
+                    <select
+                      value={actividad.finalizada}
+                      onChange={(e) =>
+                        handleActividadChange(
+                          index,
+                          "finalizada",
+                          e.target.value
+                        )
+                      }
+                      className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">-</option>
+                      <option value="SI">SI</option>
+                      <option value="NO">NO</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-center md:justify-start mt-4">
+            <button
+              type="button"
+              onClick={addActividad}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+            >
+              + Agregar Actividad
+            </button>
+          </div>
+        </div>
+        {/* <div className="flex justify-center md:justify-start">
+          <button
+            type="button"
+            onClick={addActividad}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+          >
+            + Agregar Actividad
+          </button>
+        </div> */}
+      </div>
+      <h2 className="text-xl font-semibold text-black mb-4">DOCUMENTACIÓN</h2>
 
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -528,7 +1005,7 @@ export default function Home() {
       </div>
 
       <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-700 mb-2">
+        <h3 className="text-lg font-medium flex justify-center md:justify-start text-gray-700 mb-2">
           Documentos ENTREGADOS
         </h3>
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
@@ -589,7 +1066,7 @@ export default function Home() {
         <button
           type="button"
           onClick={() => addDocumento("entregados")}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+          className="px-4 py-2 bg-blue-500 text-white rounded  hover:bg-blue-600 text-sm"
         >
           + Agregar Documento Entregado
         </button>
@@ -675,7 +1152,11 @@ export default function Home() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <PrintButton formData={formData} />
+        <PrintButton
+          formData={formData}
+          onClearForm={handleClearForm}
+          onNewForm={handleNewForm}
+        />
         {/* <button
           type="button"
           onClick={() => {

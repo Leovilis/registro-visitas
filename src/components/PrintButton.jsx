@@ -505,7 +505,7 @@ const PrintButton = ({ formData, onClearForm, onNewForm }) => {
   };
 
   return (
-    <div className="flex flex-wrap gap-4 mb-6">
+    <div className="flex justify-center md:justify-start flex-wrap gap-4 mb-6">
       <button
         onClick={handlePrint}
         disabled={isGenerating}

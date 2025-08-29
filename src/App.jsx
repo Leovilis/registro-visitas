@@ -119,7 +119,7 @@ function App() {
       const tipo = parts[0];
       const index = parseInt(parts[1]);
       const field = parts[2];
-      
+
       const newDocs = { ...formData.documentacion };
       if (tipo === 'entregado') {
         newDocs.entregados[index][field] = signature;
@@ -198,43 +198,7 @@ function App() {
 
   // Función para crear nueva planilla
   const handleNewForm = () => {
-    if (window.confirm('¿Estás seguro de que quieres crear una nueva planilla? Se perderán los datos no guardados.')) {
-      setFormData({
-        empresa: '',
-        fechaVisita: new Date().toISOString().split('T')[0],
-        area: '',
-        sucursal: '',
-        provincia: '',
-        horarioSaludo: '',
-        visitantes: ['', '', '', '', '', ''],
-        sucursal1: {
-          ingreso: '',
-          egreso: '',
-          firma: '',
-        },
-        sucursal2: {
-          ingreso: '',
-          egreso: '',
-          firma: '',
-        },
-        actividades: [
-          {
-            inicio: '',
-            fin: '',
-            areaSector: '',
-            descripcion: '',
-            finalizada: '',
-          },
-        ],
-        documentacion: {
-          firma: '',
-          entregados: [{ nombre: '', firmaRecibio: '' }],
-          recibidos: [{ nombre: '', firmaRecibio: '' }],
-        },
-        horarioLlegada: '',
-      });
-      alert('Nueva planilla creada');
-    }
+    window.open(window.location.href, '_blank');
   };
 
   return (
@@ -360,16 +324,16 @@ function App() {
           <tbody className="bg-white divide-y divide-gray-200">
             <tr>
               <td colSpan="2" className="px-4 py-2 border border-gray-200">
-                <TimeButton 
-                  field="sucursal-1-ingreso" 
-                  onSetTime={handleSetTime} 
+                <TimeButton
+                  field="sucursal-1-ingreso"
+                  onSetTime={handleSetTime}
                   currentTime={formData.sucursal1.ingreso}
                 />
               </td>
               <td colSpan="2" className="px-4 py-2 border border-gray-200">
-                <TimeButton 
-                  field="sucursal-1-egreso" 
-                  onSetTime={handleSetTime} 
+                <TimeButton
+                  field="sucursal-1-egreso"
+                  onSetTime={handleSetTime}
                   currentTime={formData.sucursal1.egreso}
                 />
               </td>
@@ -377,8 +341,8 @@ function App() {
                 {formData.sucursal1.firma ? (
                   <img src={formData.sucursal1.firma} alt="Firma" className="max-w-full h-16 mx-auto" />
                 ) : (
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowSignaturePad({ show: true, field: 'sucursal-1' })}
                     className="w-full py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                   >
@@ -401,16 +365,16 @@ function App() {
           <tbody className="bg-white divide-y divide-gray-200">
             <tr>
               <td colSpan="2" className="px-4 py-2 border border-gray-200">
-                <TimeButton 
-                  field="sucursal-2-ingreso" 
-                  onSetTime={handleSetTime} 
+                <TimeButton
+                  field="sucursal-2-ingreso"
+                  onSetTime={handleSetTime}
                   currentTime={formData.sucursal2.ingreso}
                 />
               </td>
               <td colSpan="2" className="px-4 py-2 border border-gray-200">
-                <TimeButton 
-                  field="sucursal-2-egreso" 
-                  onSetTime={handleSetTime} 
+                <TimeButton
+                  field="sucursal-2-egreso"
+                  onSetTime={handleSetTime}
                   currentTime={formData.sucursal2.egreso}
                 />
               </td>
@@ -418,8 +382,8 @@ function App() {
                 {formData.sucursal2.firma ? (
                   <img src={formData.sucursal2.firma} alt="Firma" className="max-w-full h-16 mx-auto" />
                 ) : (
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setShowSignaturePad({ show: true, field: 'sucursal-2' })}
                     className="w-full py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                   >
@@ -445,16 +409,16 @@ function App() {
             {formData.actividades.map((actividad, index) => (
               <tr key={index}>
                 <td className="px-4 py-2 border border-gray-200">
-                  <TimeButton 
-                    field={`actividad-${index}-inicio`} 
-                    onSetTime={handleSetTime} 
+                  <TimeButton
+                    field={`actividad-${index}-inicio`}
+                    onSetTime={handleSetTime}
                     currentTime={actividad.inicio}
                   />
                 </td>
                 <td className="px-4 py-2 border border-gray-200">
-                  <TimeButton 
-                    field={`actividad-${index}-fin`} 
-                    onSetTime={handleSetTime} 
+                  <TimeButton
+                    field={`actividad-${index}-fin`}
+                    onSetTime={handleSetTime}
                     currentTime={actividad.fin}
                   />
                 </td>
@@ -489,9 +453,9 @@ function App() {
             ))}
           </tbody>
         </table>
-        <button 
-          type="button" 
-          onClick={addActividad} 
+        <button
+          type="button"
+          onClick={addActividad}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
         >
           + Agregar Actividad
@@ -506,8 +470,8 @@ function App() {
           {formData.documentacion.firma ? (
             <img src={formData.documentacion.firma} alt="Firma" className="max-w-full h-20" />
           ) : (
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setShowSignaturePad({ show: true, field: 'documentacion-firma' })}
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
@@ -541,8 +505,8 @@ function App() {
                   {doc.firmaRecibio ? (
                     <img src={doc.firmaRecibio} alt="Firma" className="max-w-full h-16 mx-auto" />
                   ) : (
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setShowSignaturePad({ show: true, field: `entregado-${index}-firmaRecibio` })}
                       className="w-full py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     >
@@ -554,9 +518,9 @@ function App() {
             ))}
           </tbody>
         </table>
-        <button 
-          type="button" 
-          onClick={() => addDocumento('entregados')} 
+        <button
+          type="button"
+          onClick={() => addDocumento('entregados')}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
         >
           + Agregar Documento Entregado
@@ -587,8 +551,8 @@ function App() {
                   {doc.firmaRecibio ? (
                     <img src={doc.firmaRecibio} alt="Firma" className="max-w-full h-16 mx-auto" />
                   ) : (
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setShowSignaturePad({ show: true, field: `recibido-${index}-firmaRecibio` })}
                       className="w-full py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     >
@@ -600,9 +564,9 @@ function App() {
             ))}
           </tbody>
         </table>
-        <button 
-          type="button" 
-          onClick={() => addDocumento('recibidos')} 
+        <button
+          type="button"
+          onClick={() => addDocumento('recibidos')}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
         >
           + Agregar Documento Recibido
@@ -611,21 +575,21 @@ function App() {
 
       <div className="mb-6">
         <label className="block text-sm font-medium text-gray-700 mb-2">HORARIO DE LLEGADA A LA ADMINISTRACIÓN</label>
-        <TimeButton 
-          field="horarioLlegada" 
-          onSetTime={handleSetTime} 
+        <TimeButton
+          field="horarioLlegada"
+          onSetTime={handleSetTime}
           currentTime={formData.horarioLlegada}
         />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <PrintButton 
-          formData={formData} 
-          onClearForm={handleClearForm} 
-          onNewForm={handleNewForm} 
+        <PrintButton
+          formData={formData}
+          onClearForm={handleClearForm}
+          onNewForm={handleNewForm}
         />
-        <button 
-          type="button" 
+        <button
+          type="button"
           onClick={() => {
             const dataStr = JSON.stringify(formData);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -643,8 +607,8 @@ function App() {
       </div>
 
       {showSignaturePad.show && (
-        <SignaturePad 
-          onSave={handleSaveSignature} 
+        <SignaturePad
+          onSave={handleSaveSignature}
           onCancel={() => setShowSignaturePad({ show: false, field: '' })}
         />
       )}

@@ -62,3 +62,17 @@ body {
     padding: 8px;
   }
 }
+@media (max-width: 768px) {
+  .text-center-mobile {
+    text-align: center !important;
+  }
+  
+  .justify-center-mobile {
+    justify-content: center !important;
+  }
+  
+  .mx-auto-mobile {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
