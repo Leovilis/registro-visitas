@@ -1,9 +1,9 @@
 export const empresas = [
   "BADIE",
-  "DDP",
+  "DON PEDRO",
   "EL BAYEH",
-  "FM",
-  "MDS",
+  "FERNANDO MANZUR",
+  "EL SILENCIO",
   "SLEIMAN",
   "SURIA",
 ];
@@ -14,7 +14,7 @@ export const sucursalesPorEmpresa = {
     "CAFAYATE",
     "GÜEMES",
     "HUMAHUACA",
-    "JVG",
+    "JOAQUIN GONZALEZ",
     "LA QUIACA",
     "LIBERTADOR",
     "MAIMARA",
@@ -25,9 +25,9 @@ export const sucursalesPorEmpresa = {
     "SAN PEDRO",
     "TARTAGAL",
   ],
-  DDP: ["JUJUY", "LA QUIACA"],
+  "DON PEDRO": ["JUJUY", "LA QUIACA"],
   "EL BAYEH": ["HUACALERA", "MAIMARA"],
-  FM: [
+  "FERNANDO MANZUR": [
     "ABRA PAMPA",
     "HUMAHUACA",
     "LA QUIACA",
@@ -35,7 +35,7 @@ export const sucursalesPorEmpresa = {
     "MAIMARA",
     "SAN PEDRO",
   ],
-  MDS: ["PURMAMARCA"],
+  "EL SILENCIO": ["PURMAMARCA"],
   SLEIMAN: ["HUA PLANTA", "HUA TAMBO"],
   SURIA: ["ABRA PAMPA", "HUMAHUACA", "JUJUY", "LA QUIACA", "MAIMARA"],
 };
@@ -50,7 +50,7 @@ export const areas = [
   "DATA ANALYTICS",
   "FINANZAS",
   "RRHH",
-  "RSE",
+  "RSS",
   "SISTEMAS",
 ];
 

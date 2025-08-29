@@ -114,6 +114,19 @@ function App() {
     if (showSignaturePad.field.includes('sucursal')) {
       const sucursalNum = showSignaturePad.field.split('-')[1];
       handleSucursalChange(sucursalNum, 'firma', signature);
+    } else if (showSignaturePad.field.includes('entregado') || showSignaturePad.field.includes('recibido')) {
+      const parts = showSignaturePad.field.split('-');
+      const tipo = parts[0];
+      const index = parseInt(parts[1]);
+      const field = parts[2];
+      
+      const newDocs = { ...formData.documentacion };
+      if (tipo === 'entregado') {
+        newDocs.entregados[index][field] = signature;
+      } else if (tipo === 'recibido') {
+        newDocs.recibidos[index][field] = signature;
+      }
+      setFormData(prev => ({ ...prev, documentacion: newDocs }));
     } else {
       setFormData(prev => ({
         ...prev,
@@ -142,6 +155,88 @@ function App() {
     }
   };
 
+  // Función para limpiar el formulario
+  const handleClearForm = () => {
+    if (window.confirm('¿Estás seguro de que quieres limpiar el formulario? Se perderán todos los datos.')) {
+      setFormData({
+        empresa: '',
+        fechaVisita: new Date().toISOString().split('T')[0],
+        area: '',
+        sucursal: '',
+        provincia: '',
+        horarioSaludo: '',
+        visitantes: ['', '', '', '', '', ''],
+        sucursal1: {
+          ingreso: '',
+          egreso: '',
+          firma: '',
+        },
+        sucursal2: {
+          ingreso: '',
+          egreso: '',
+          firma: '',
+        },
+        actividades: [
+          {
+            inicio: '',
+            fin: '',
+            areaSector: '',
+            descripcion: '',
+            finalizada: '',
+          },
+        ],
+        documentacion: {
+          firma: '',
+          entregados: [{ nombre: '', firmaRecibio: '' }],
+          recibidos: [{ nombre: '', firmaRecibio: '' }],
+        },
+        horarioLlegada: '',
+      });
+      alert('Formulario limpiado correctamente');
+    }
+  };
+
+  // Función para crear nueva planilla
+  const handleNewForm = () => {
+    if (window.confirm('¿Estás seguro de que quieres crear una nueva planilla? Se perderán los datos no guardados.')) {
+      setFormData({
+        empresa: '',
+        fechaVisita: new Date().toISOString().split('T')[0],
+        area: '',
+        sucursal: '',
+        provincia: '',
+        horarioSaludo: '',
+        visitantes: ['', '', '', '', '', ''],
+        sucursal1: {
+          ingreso: '',
+          egreso: '',
+          firma: '',
+        },
+        sucursal2: {
+          ingreso: '',
+          egreso: '',
+          firma: '',
+        },
+        actividades: [
+          {
+            inicio: '',
+            fin: '',
+            areaSector: '',
+            descripcion: '',
+            finalizada: '',
+          },
+        ],
+        documentacion: {
+          firma: '',
+          entregados: [{ nombre: '', firmaRecibio: '' }],
+          recibidos: [{ nombre: '', firmaRecibio: '' }],
+        },
+        horarioLlegada: '',
+      });
+      alert('Nueva planilla creada');
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">REGISTRO DE VISITAS</h1>
@@ -156,9 +251,9 @@ function App() {
             name="empresa"
             value={formData.empresa}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-700"
           >
-            <option value="">Seleccione una empresa</option>
+            <option value="" >Seleccione una empresa</option>
             {empresas.map(empresa => (
               <option key={empresa} value={empresa}>{empresa}</option>
             ))}
@@ -298,8 +393,8 @@ function App() {
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
           <thead className="bg-gray-50">
             <tr>
-              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">HORARIO DE INGRESO A LA SUCURSAL 2:</th>
-              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">HORARIO DE EGRESO DE LA SUCURSAL 2:</th>
+              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">HORARIO OF INGRESO A LA SUCURSAL 2:</th>
+              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">HORARIO OF EGRESO DE LA SUCURSAL 2:</th>
               <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 2:</th>
             </tr>
           </thead>
@@ -386,7 +481,7 @@ function App() {
                     className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">-</option>
-                    <option value="S">S</option>
+                    <option value="SI">SI</option>
                     <option value="NO">NO</option>
                   </select>
                 </td>
@@ -448,7 +543,7 @@ function App() {
                   ) : (
                     <button 
                       type="button" 
-                      onClick={() => setShowSignaturePad({ show: true, field: `entregado-${index}-firma` })}
+                      onClick={() => setShowSignaturePad({ show: true, field: `entregado-${index}-firmaRecibio` })}
                       className="w-full py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     >
                       Firmar
@@ -494,7 +589,7 @@ function App() {
                   ) : (
                     <button 
                       type="button" 
-                      onClick={() => setShowSignaturePad({ show: true, field: `recibido-${index}-firma` })}
+                      onClick={() => setShowSignaturePad({ show: true, field: `recibido-${index}-firmaRecibio` })}
                       className="w-full py-1 px-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
                     >
                       Firmar
@@ -524,7 +619,11 @@ function App() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <PrintButton formData={formData} />
+        <PrintButton 
+          formData={formData} 
+          onClearForm={handleClearForm} 
+          onNewForm={handleNewForm} 
+        />
         <button 
           type="button" 
           onClick={() => {

@@ -163,7 +163,7 @@ export default function Home() {
             name="empresa"
             value={formData.empresa}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
             <option className="text-black" value="">Seleccione una empresa</option>
             {empresas.map((empresa) => (
@@ -184,7 +184,7 @@ export default function Home() {
             value={formData.fechaVisita}
             onChange={handleChange}
             disabled
-            className="w-full p-2 border border-gray-300 rounded-md shadow-sm bg-gray-100"
+            className="w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm bg-gray-100"
           />
         </div>
 
@@ -196,7 +196,7 @@ export default function Home() {
             name="area"
             value={formData.area}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Seleccione un área</option>
             {areas.map((area) => (
@@ -216,7 +216,7 @@ export default function Home() {
             value={formData.sucursal}
             onChange={handleChange}
             disabled={!formData.empresa}
-            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
+            className="w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
           >
             <option value="">Seleccione una sucursal</option>
             {sucursalesDisponibles.map((sucursal) => (
@@ -235,7 +235,7 @@ export default function Home() {
             name="provincia"
             value={formData.provincia}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Seleccione una provincia</option>
             {provincias.map((provincia) => (
@@ -255,7 +255,7 @@ export default function Home() {
             name="horarioSaludo"
             value={formData.horarioSaludo}
             onChange={handleChange}
-            className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            className="w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
       </div>
@@ -272,7 +272,7 @@ export default function Home() {
               value={visitante}
               onChange={(e) => handleVisitanteChange(index, e.target.value)}
               placeholder={`Visitante ${index + 1}`}
-              className="p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+              className="p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
             />
           ))}
         </div>
@@ -284,7 +284,7 @@ export default function Home() {
 
       <div className="overflow-x-auto mb-6">
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 ">
             <tr>
               <th
                 colSpan="2"
@@ -444,17 +444,17 @@ export default function Home() {
                     currentTime={actividad.fin}
                   />
                 </td>
-                <td className="px-4 py-2 border border-gray-200">
+                <td className="px-4 py-2 border text-gray-700 border-gray-200">
                   <input
                     type="text"
                     value={actividad.areaSector}
                     onChange={(e) =>
                       handleActividadChange(index, "areaSector", e.target.value)
                     }
-                    className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   />
                 </td>
-                <td className="px-4 py-2 border border-gray-200">
+                <td className="px-4 py-2 border text-gray-700 border-gray-200">
                   <input
                     type="text"
                     value={actividad.descripcion}
@@ -465,10 +465,10 @@ export default function Home() {
                         e.target.value
                       )
                     }
-                    className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   />
                 </td>
-                <td className="px-4 py-2 border border-gray-200">
+                <td className="px-4 py-2 border text-gray-700 border-gray-200">
                   <select
                     value={actividad.finalizada}
                     onChange={(e) =>
@@ -477,7 +477,7 @@ export default function Home() {
                     className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">-</option>
-                    <option value="S">SI</option>
+                    <option value="SI">SI</option>
                     <option value="NO">NO</option>
                   </select>
                 </td>
@@ -545,7 +545,7 @@ export default function Home() {
           <tbody className="bg-white divide-y divide-gray-200">
             {formData.documentacion.entregados.map((doc, index) => (
               <tr key={`entregado-${index}`}>
-                <td className="px-4 py-2 border border-gray-200">
+                <td className="px-4 py-2 border text-gray-700 border-gray-200">
                   <input
                     type="text"
                     value={doc.nombre}
@@ -557,10 +557,10 @@ export default function Home() {
                         e.target.value
                       )
                     }
-                    className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   />
                 </td>
-                <td className="px-4 py-2 border border-gray-200">
+                <td className="px-4 py-2 border text-gray-700 border-gray-200">
                   {doc.firmaRecibio ? (
                     <img
                       src={doc.firmaRecibio}
@@ -613,7 +613,7 @@ export default function Home() {
           <tbody className="bg-white divide-y divide-gray-200">
             {formData.documentacion.recibidos.map((doc, index) => (
               <tr key={`recibido-${index}`}>
-                <td className="px-4 py-2 border border-gray-200">
+                <td className="px-4 py-2 border text-gray-700 border-gray-200">
                   <input
                     type="text"
                     value={doc.nombre}
