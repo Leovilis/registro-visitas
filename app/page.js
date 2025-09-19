@@ -49,27 +49,6 @@ export default function Home() {
   });
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    if (formData.empresa) {
-      setSucursalesDisponibles(sucursalesPorEmpresa[formData.empresa] || []);
-      setFormData((prev) => ({ ...prev, sucursal: "" }));
-    } else {
-      setSucursalesDisponibles([]);
-    }
-  }, [formData.empresa]);
-  // Agregar este useEffect después del useEffect existente
-  useEffect(() => {
-    // Registrar Service Worker para PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
-          console.log('Service Worker registrado exitosamente:', registration.scope);
-        })
-        .catch((error) => {
-          console.log('Error al registrar Service Worker:', error);
-        });
-    }
-  }, []);
   const validateForm = () => {
     const newErrors = {};
 
@@ -78,41 +57,73 @@ export default function Home() {
     if (!formData.area) newErrors.area = "Área es requerida";
     if (!formData.sucursal) newErrors.sucursal = "Sucursal es requerida";
     if (!formData.provincia) newErrors.provincia = "Provincia es requerida";
-    if (!formData.horarioSaludo) newErrors.horarioSaludo = "Horario de saludo es requerido";
-    if (!formData.horarioLlegada) newErrors.horarioLlegada = "Horario de llegada es requerido";
+    if (!formData.horarioSaludo)
+      newErrors.horarioSaludo = "Horario de saludo es requerido";
+    if (!formData.horarioLlegada)
+      newErrors.horarioLlegada = "Horario de llegada es requerido";
 
     // Validar al menos un visitante
-    const hasVisitante = formData.visitantes.some(visitante => visitante.trim() !== "");
-    if (!hasVisitante) newErrors.visitantes = "Al menos un visitante es requerido";
+    const hasVisitante = formData.visitantes.some(
+      (visitante) => visitante.trim() !== ""
+    );
+    if (!hasVisitante)
+      newErrors.visitantes = "Al menos un visitante es requerido";
 
     // Validar al menos una sucursal con datos completos
-    const sucursal1Completa = formData.sucursal1.ingreso && formData.sucursal1.egreso && formData.sucursal1.firma;
-    const sucursal2Completa = formData.sucursal2.ingreso && formData.sucursal2.egreso && formData.sucursal2.firma;
+    const sucursal1Completa =
+      formData.sucursal1.ingreso &&
+      formData.sucursal1.egreso &&
+      formData.sucursal1.firma;
+    const sucursal2Completa =
+      formData.sucursal2.ingreso &&
+      formData.sucursal2.egreso &&
+      formData.sucursal2.firma;
 
     if (!sucursal1Completa && !sucursal2Completa) {
-      newErrors.sucursales = "Al menos una sucursal debe estar completa con horarios y firma";
+      newErrors.sucursales =
+        "Al menos una sucursal debe estar completa con horarios y firma";
     } else {
       if (sucursal1Completa) {
-        if (!formData.sucursal1.ingreso) newErrors.sucursal1Ingreso = "Ingreso a sucursal 1 es requerido";
-        if (!formData.sucursal1.egreso) newErrors.sucursal1Egreso = "Egreso de sucursal 1 es requerido";
-        if (!formData.sucursal1.firma) newErrors.sucursal1Firma = "Firma de sucursal 1 es requerida";
+        if (!formData.sucursal1.ingreso)
+          newErrors.sucursal1Ingreso = "Ingreso a sucursal 1 es requerido";
+        if (!formData.sucursal1.egreso)
+          newErrors.sucursal1Egreso = "Egreso de sucursal 1 es requerido";
+        if (!formData.sucursal1.firma)
+          newErrors.sucursal1Firma = "Firma de sucursal 1 es requerida";
       }
 
       if (sucursal2Completa) {
-        if (!formData.sucursal2.ingreso) newErrors.sucursal2Ingreso = "Ingreso a sucursal 2 es requerido";
-        if (!formData.sucursal2.egreso) newErrors.sucursal2Egreso = "Egreso de sucursal 2 es requerido";
-        if (!formData.sucursal2.firma) newErrors.sucursal2Firma = "Firma de sucursal 2 es requerida";
+        if (!formData.sucursal2.ingreso)
+          newErrors.sucursal2Ingreso = "Ingreso a sucursal 2 es requerido";
+        if (!formData.sucursal2.egreso)
+          newErrors.sucursal2Egreso = "Egreso de sucursal 2 es requerido";
+        if (!formData.sucursal2.firma)
+          newErrors.sucursal2Firma = "Firma de sucursal 2 es requerida";
       }
     }
 
     // Validar actividades
     formData.actividades.forEach((actividad, index) => {
-      if (actividad.inicio || actividad.fin || actividad.areaSector || actividad.descripcion || actividad.finalizada) {
-        if (!actividad.inicio) newErrors[`actividad${index}Inicio`] = "Hora de inicio es requerida";
-        if (!actividad.fin) newErrors[`actividad${index}Fin`] = "Hora de finalización es requerida";
-        if (!actividad.areaSector) newErrors[`actividad${index}AreaSector`] = "Área/sector es requerido";
-        if (!actividad.descripcion) newErrors[`actividad${index}Descripcion`] = "Descripción es requerida";
-        if (!actividad.finalizada) newErrors[`actividad${index}Finalizada`] = "Indicación de finalización es requerida";
+      if (
+        actividad.inicio ||
+        actividad.fin ||
+        actividad.areaSector ||
+        actividad.descripcion ||
+        actividad.finalizada
+      ) {
+        if (!actividad.inicio)
+          newErrors[`actividad${index}Inicio`] = "Hora de inicio es requerida";
+        if (!actividad.fin)
+          newErrors[`actividad${index}Fin`] =
+            "Hora de finalización es requerida";
+        if (!actividad.areaSector)
+          newErrors[`actividad${index}AreaSector`] = "Área/sector es requerido";
+        if (!actividad.descripcion)
+          newErrors[`actividad${index}Descripcion`] =
+            "Descripción es requerida";
+        if (!actividad.finalizada)
+          newErrors[`actividad${index}Finalizada`] =
+            "Indicación de finalización es requerida";
       }
     });
 
@@ -142,7 +153,7 @@ export default function Home() {
     setFormData((prev) => ({ ...prev, visitantes: newVisitantes }));
 
     // Limpiar error de visitantes si se agrega al menos uno
-    if (errors.visitantes && newVisitantes.some(v => v.trim() !== "")) {
+    if (errors.visitantes && newVisitantes.some((v) => v.trim() !== "")) {
       setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors.visitantes;
@@ -157,7 +168,9 @@ export default function Home() {
     setFormData((prev) => ({ ...prev, actividades: newActividades }));
 
     // Limpiar error del campo cuando se modifica
-    const errorKey = `actividad${index}${field.charAt(0).toUpperCase() + field.slice(1)}`;
+    const errorKey = `actividad${index}${
+      field.charAt(0).toUpperCase() + field.slice(1)
+    }`;
     if (errors[errorKey]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -205,7 +218,9 @@ export default function Home() {
     }));
 
     // Limpiar error del campo cuando se modifica
-    const errorKey = `sucursal${sucursalNum}${field.charAt(0).toUpperCase() + field.slice(1)}`;
+    const errorKey = `sucursal${sucursalNum}${
+      field.charAt(0).toUpperCase() + field.slice(1)
+    }`;
     if (errors[errorKey]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -216,8 +231,14 @@ export default function Home() {
 
     // Limpiar error general de sucursales si se completa una sucursal
     if (errors.sucursales) {
-      const sucursal1Completa = formData.sucursal1.ingreso && formData.sucursal1.egreso && formData.sucursal1.firma;
-      const sucursal2Completa = formData.sucursal2.ingreso && formData.sucursal2.egreso && formData.sucursal2.firma;
+      const sucursal1Completa =
+        formData.sucursal1.ingreso &&
+        formData.sucursal1.egreso &&
+        formData.sucursal1.firma;
+      const sucursal2Completa =
+        formData.sucursal2.ingreso &&
+        formData.sucursal2.egreso &&
+        formData.sucursal2.firma;
 
       if (sucursal1Completa || sucursal2Completa) {
         setErrors((prev) => {
@@ -335,7 +356,7 @@ export default function Home() {
   };
 
   const handleNewForm = () => {
-    window.open(window.location.href, '_blank');
+    window.open(window.location.href, "_blank");
   };
 
   // Función para manejar la impresión con validación
@@ -346,9 +367,14 @@ export default function Home() {
     } else {
       // Desplazarse al primer error
       const firstErrorKey = Object.keys(errors)[0];
-      const firstErrorElement = document.querySelector(`[data-error="${firstErrorKey}"]`);
+      const firstErrorElement = document.querySelector(
+        `[data-error="${firstErrorKey}"]`
+      );
       if (firstErrorElement) {
-        firstErrorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstErrorElement.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
         firstErrorElement.focus();
       }
       return false;
@@ -382,7 +408,9 @@ export default function Home() {
             name="empresa"
             value={formData.empresa}
             onChange={handleChange}
-            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${errors.empresa ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
+              errors.empresa ? "border-red-500" : ""
+            }`}
           >
             <option className="text-black" value="">
               Seleccione una empresa
@@ -393,7 +421,9 @@ export default function Home() {
               </option>
             ))}
           </select>
-          {errors.empresa && <p className="text-red-500 text-xs mt-1">{errors.empresa}</p>}
+          {errors.empresa && (
+            <p className="text-red-500 text-xs mt-1">{errors.empresa}</p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -418,7 +448,9 @@ export default function Home() {
             name="area"
             value={formData.area}
             onChange={handleChange}
-            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${errors.area ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
+              errors.area ? "border-red-500" : ""
+            }`}
           >
             <option value="">Seleccione un área</option>
             {areas.map((area) => (
@@ -427,7 +459,9 @@ export default function Home() {
               </option>
             ))}
           </select>
-          {errors.area && <p className="text-red-500 text-xs mt-1">{errors.area}</p>}
+          {errors.area && (
+            <p className="text-red-500 text-xs mt-1">{errors.area}</p>
+          )}
         </div>
 
         <div className="space-y-2" data-error="sucursal">
@@ -439,7 +473,9 @@ export default function Home() {
             value={formData.sucursal}
             onChange={handleChange}
             disabled={!formData.empresa}
-            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 ${errors.sucursal ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 ${
+              errors.sucursal ? "border-red-500" : ""
+            }`}
           >
             <option value="">Seleccione una sucursal</option>
             {sucursalesDisponibles.map((sucursal) => (
@@ -448,7 +484,9 @@ export default function Home() {
               </option>
             ))}
           </select>
-          {errors.sucursal && <p className="text-red-500 text-xs mt-1">{errors.sucursal}</p>}
+          {errors.sucursal && (
+            <p className="text-red-500 text-xs mt-1">{errors.sucursal}</p>
+          )}
         </div>
 
         <div className="space-y-2" data-error="provincia">
@@ -459,7 +497,9 @@ export default function Home() {
             name="provincia"
             value={formData.provincia}
             onChange={handleChange}
-            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${errors.provincia ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
+              errors.provincia ? "border-red-500" : ""
+            }`}
           >
             <option value="">Seleccione una provincia</option>
             {provincias.map((provincia) => (
@@ -468,7 +508,9 @@ export default function Home() {
               </option>
             ))}
           </select>
-          {errors.provincia && <p className="text-red-500 text-xs mt-1">{errors.provincia}</p>}
+          {errors.provincia && (
+            <p className="text-red-500 text-xs mt-1">{errors.provincia}</p>
+          )}
         </div>
 
         <div className="space-y-2" data-error="horarioSaludo">
@@ -480,9 +522,13 @@ export default function Home() {
             name="horarioSaludo"
             value={formData.horarioSaludo}
             onChange={handleChange}
-            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${errors.horarioSaludo ? 'border-red-500' : ''}`}
+            className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
+              errors.horarioSaludo ? "border-red-500" : ""
+            }`}
           />
-          {errors.horarioSaludo && <p className="text-red-500 text-xs mt-1">{errors.horarioSaludo}</p>}
+          {errors.horarioSaludo && (
+            <p className="text-red-500 text-xs mt-1">{errors.horarioSaludo}</p>
+          )}
         </div>
       </div>
 
@@ -502,7 +548,9 @@ export default function Home() {
             />
           ))}
         </div>
-        {errors.visitantes && <p className="text-red-500 text-xs mt-1">{errors.visitantes}</p>}
+        {errors.visitantes && (
+          <p className="text-red-500 text-xs mt-1">{errors.visitantes}</p>
+        )}
       </div>
 
       <h2 className="text-xl font-semibold text-black mb-4">
@@ -514,20 +562,33 @@ export default function Home() {
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
           <thead className="bg-gray-50">
             <tr>
-              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
                 HORARIO DE INGRESO A LA SUCURSAL 1: *
               </th>
-              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
                 HORARIO DE EGRESO DE LA SUCURSAL 1: *
               </th>
-              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
                 FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 1: *
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             <tr>
-              <td colSpan="2" className="px-4 py-2 border border-gray-200" data-error="sucursal1Ingreso">
+              <td
+                colSpan="2"
+                className="px-4 py-2 border border-gray-200"
+                data-error="sucursal1Ingreso"
+              >
                 <div className="flex justify-center md:justify-start">
                   <TimeButton
                     field="sucursal-1-ingreso"
@@ -535,9 +596,17 @@ export default function Home() {
                     currentTime={formData.sucursal1.ingreso}
                   />
                 </div>
-                {errors.sucursal1Ingreso && <p className="text-red-500 text-xs mt-1 text-center">{errors.sucursal1Ingreso}</p>}
+                {errors.sucursal1Ingreso && (
+                  <p className="text-red-500 text-xs mt-1 text-center">
+                    {errors.sucursal1Ingreso}
+                  </p>
+                )}
               </td>
-              <td colSpan="2" className="px-4 py-2 border border-gray-200" data-error="sucursal1Egreso">
+              <td
+                colSpan="2"
+                className="px-4 py-2 border border-gray-200"
+                data-error="sucursal1Egreso"
+              >
                 <div className="flex justify-center md:justify-start">
                   <TimeButton
                     field="sucursal-1-egreso"
@@ -545,9 +614,17 @@ export default function Home() {
                     currentTime={formData.sucursal1.egreso}
                   />
                 </div>
-                {errors.sucursal1Egreso && <p className="text-red-500 text-xs mt-1 text-center">{errors.sucursal1Egreso}</p>}
+                {errors.sucursal1Egreso && (
+                  <p className="text-red-500 text-xs mt-1 text-center">
+                    {errors.sucursal1Egreso}
+                  </p>
+                )}
               </td>
-              <td colSpan="2" className="px-4 py-2 border border-gray-200" data-error="sucursal1Firma">
+              <td
+                colSpan="2"
+                className="px-4 py-2 border border-gray-200"
+                data-error="sucursal1Firma"
+              >
                 <div className="flex justify-center">
                   {formData.sucursal1.firma ? (
                     <img
@@ -567,7 +644,11 @@ export default function Home() {
                     </button>
                   )}
                 </div>
-                {errors.sucursal1Firma && <p className="text-red-500 text-xs mt-1 text-center">{errors.sucursal1Firma}</p>}
+                {errors.sucursal1Firma && (
+                  <p className="text-red-500 text-xs mt-1 text-center">
+                    {errors.sucursal1Firma}
+                  </p>
+                )}
               </td>
             </tr>
           </tbody>
@@ -577,20 +658,33 @@ export default function Home() {
         <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
           <thead className="bg-gray-50">
             <tr>
-              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
                 HORARIO DE INGRESO A LA SUCURSAL 2: *
               </th>
-              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
                 HORARIO DE EGRESO DE LA SUCURSAL 2: *
               </th>
-              <th colSpan="2" className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
+              <th
+                colSpan="2"
+                className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200"
+              >
                 FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 2: *
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             <tr>
-              <td colSpan="2" className="px-4 py-2 border border-gray-200" data-error="sucursal2Ingreso">
+              <td
+                colSpan="2"
+                className="px-4 py-2 border border-gray-200"
+                data-error="sucursal2Ingreso"
+              >
                 <div className="flex justify-center md:justify-start">
                   <TimeButton
                     field="sucursal-2-ingreso"
@@ -598,9 +692,17 @@ export default function Home() {
                     currentTime={formData.sucursal2.ingreso}
                   />
                 </div>
-                {errors.sucursal2Ingreso && <p className="text-red-500 text-xs mt-1 text-center">{errors.sucursal2Ingreso}</p>}
+                {errors.sucursal2Ingreso && (
+                  <p className="text-red-500 text-xs mt-1 text-center">
+                    {errors.sucursal2Ingreso}
+                  </p>
+                )}
               </td>
-              <td colSpan="2" className="px-4 py-2 border border-gray-200" data-error="sucursal2Egreso">
+              <td
+                colSpan="2"
+                className="px-4 py-2 border border-gray-200"
+                data-error="sucursal2Egreso"
+              >
                 <div className="flex justify-center md:justify-start">
                   <TimeButton
                     field="sucursal-2-egreso"
@@ -608,9 +710,17 @@ export default function Home() {
                     currentTime={formData.sucursal2.egreso}
                   />
                 </div>
-                {errors.sucursal2Egreso && <p className="text-red-500 text-xs mt-1 text-center">{errors.sucursal2Egreso}</p>}
+                {errors.sucursal2Egreso && (
+                  <p className="text-red-500 text-xs mt-1 text-center">
+                    {errors.sucursal2Egreso}
+                  </p>
+                )}
               </td>
-              <td colSpan="2" className="px-4 py-2 border border-gray-200" data-error="sucursal2Firma">
+              <td
+                colSpan="2"
+                className="px-4 py-2 border border-gray-200"
+                data-error="sucursal2Firma"
+              >
                 <div className="flex justify-center">
                   {formData.sucursal2.firma ? (
                     <img
@@ -630,13 +740,21 @@ export default function Home() {
                     </button>
                   )}
                 </div>
-                {errors.sucursal2Firma && <p className="text-red-500 text-xs mt-1 text-center">{errors.sucursal2Firma}</p>}
+                {errors.sucursal2Firma && (
+                  <p className="text-red-500 text-xs mt-1 text-center">
+                    {errors.sucursal2Firma}
+                  </p>
+                )}
               </td>
             </tr>
           </tbody>
         </table>
 
-        {errors.sucursales && <p className="text-red-500 text-xs mt-1 mb-4 text-center">{errors.sucursales}</p>}
+        {errors.sucursales && (
+          <p className="text-red-500 text-xs mt-1 mb-4 text-center">
+            {errors.sucursales}
+          </p>
+        )}
 
         {/* Actividades - Versión Desktop */}
         <div className="hidden md:block">
@@ -663,7 +781,10 @@ export default function Home() {
             <tbody className="bg-white divide-y divide-gray-200">
               {formData.actividades.map((actividad, index) => (
                 <tr key={index}>
-                  <td className="px-4 py-2 border border-gray-200" data-error={`actividad${index}Inicio`}>
+                  <td
+                    className="px-4 py-2 border border-gray-200"
+                    data-error={`actividad${index}Inicio`}
+                  >
                     <div className="flex justify-center md:justify-start">
                       <TimeButton
                         field={`actividad-${index}-inicio`}
@@ -671,9 +792,16 @@ export default function Home() {
                         currentTime={actividad.inicio}
                       />
                     </div>
-                    {errors[`actividad${index}Inicio`] && <p className="text-red-500 text-xs mt-1 text-center">{errors[`actividad${index}Inicio`]}</p>}
+                    {errors[`actividad${index}Inicio`] && (
+                      <p className="text-red-500 text-xs mt-1 text-center">
+                        {errors[`actividad${index}Inicio`]}
+                      </p>
+                    )}
                   </td>
-                  <td className="px-4 py-2 border border-gray-200" data-error={`actividad${index}Fin`}>
+                  <td
+                    className="px-4 py-2 border border-gray-200"
+                    data-error={`actividad${index}Fin`}
+                  >
                     <div className="flex justify-center md:justify-start">
                       <TimeButton
                         field={`actividad-${index}-fin`}
@@ -681,20 +809,38 @@ export default function Home() {
                         currentTime={actividad.fin}
                       />
                     </div>
-                    {errors[`actividad${index}Fin`] && <p className="text-red-500 text-xs mt-1 text-center">{errors[`actividad${index}Fin`]}</p>}
+                    {errors[`actividad${index}Fin`] && (
+                      <p className="text-red-500 text-xs mt-1 text-center">
+                        {errors[`actividad${index}Fin`]}
+                      </p>
+                    )}
                   </td>
-                  <td className="px-4 py-2 border text-gray-700 border-gray-200" data-error={`actividad${index}AreaSector`}>
+                  <td
+                    className="px-4 py-2 border text-gray-700 border-gray-200"
+                    data-error={`actividad${index}AreaSector`}
+                  >
                     <input
                       type="text"
                       value={actividad.areaSector}
                       onChange={(e) =>
-                        handleActividadChange(index, "areaSector", e.target.value)
+                        handleActividadChange(
+                          index,
+                          "areaSector",
+                          e.target.value
+                        )
                       }
                       className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     />
-                    {errors[`actividad${index}AreaSector`] && <p className="text-red-500 text-xs mt-1">{errors[`actividad${index}AreaSector`]}</p>}
+                    {errors[`actividad${index}AreaSector`] && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors[`actividad${index}AreaSector`]}
+                      </p>
+                    )}
                   </td>
-                  <td className="px-4 py-2 border text-gray-700 border-gray-200" data-error={`actividad${index}Descripcion`}>
+                  <td
+                    className="px-4 py-2 border text-gray-700 border-gray-200"
+                    data-error={`actividad${index}Descripcion`}
+                  >
                     <input
                       type="text"
                       value={actividad.descripcion}
@@ -707,13 +853,24 @@ export default function Home() {
                       }
                       className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     />
-                    {errors[`actividad${index}Descripcion`] && <p className="text-red-500 text-xs mt-1">{errors[`actividad${index}Descripcion`]}</p>}
+                    {errors[`actividad${index}Descripcion`] && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors[`actividad${index}Descripcion`]}
+                      </p>
+                    )}
                   </td>
-                  <td className="px-4 py-2 border text-gray-700 border-gray-200" data-error={`actividad${index}Finalizada`}>
+                  <td
+                    className="px-4 py-2 border text-gray-700 border-gray-200"
+                    data-error={`actividad${index}Finalizada`}
+                  >
                     <select
                       value={actividad.finalizada}
                       onChange={(e) =>
-                        handleActividadChange(index, "finalizada", e.target.value)
+                        handleActividadChange(
+                          index,
+                          "finalizada",
+                          e.target.value
+                        )
                       }
                       className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                     >
@@ -721,7 +878,11 @@ export default function Home() {
                       <option value="SI">SI</option>
                       <option value="NO">NO</option>
                     </select>
-                    {errors[`actividad${index}Finalizada`] && <p className="text-red-500 text-xs mt-1">{errors[`actividad${index}Finalizada`]}</p>}
+                    {errors[`actividad${index}Finalizada`] && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors[`actividad${index}Finalizada`]}
+                      </p>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -737,7 +898,10 @@ export default function Home() {
               className="border border-gray-200 rounded-lg p-4 mb-4 bg-white"
             >
               <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="space-y-2" data-error={`actividad${index}Inicio`}>
+                <div
+                  className="space-y-2"
+                  data-error={`actividad${index}Inicio`}
+                >
                   <div className="text-xs font-medium text-black uppercase">
                     HS. INICIO
                   </div>
@@ -748,7 +912,11 @@ export default function Home() {
                       currentTime={actividad.inicio}
                     />
                   </div>
-                  {errors[`actividad${index}Inicio`] && <p className="text-red-500 text-xs mt-1 text-center">{errors[`actividad${index}Inicio`]}</p>}
+                  {errors[`actividad${index}Inicio`] && (
+                    <p className="text-red-500 text-xs mt-1 text-center">
+                      {errors[`actividad${index}Inicio`]}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2" data-error={`actividad${index}Fin`}>
@@ -762,7 +930,11 @@ export default function Home() {
                       currentTime={actividad.fin}
                     />
                   </div>
-                  {errors[`actividad${index}Fin`] && <p className="text-red-500 text-xs mt-1 text-center">{errors[`actividad${index}Fin`]}</p>}
+                  {errors[`actividad${index}Fin`] && (
+                    <p className="text-red-500 text-xs mt-1 text-center">
+                      {errors[`actividad${index}Fin`]}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -778,11 +950,18 @@ export default function Home() {
                   }
                   className="w-full p-2 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                 />
-                {errors[`actividad${index}AreaSector`] && <p className="text-red-500 text-xs mt-1">{errors[`actividad${index}AreaSector`]}</p>}
+                {errors[`actividad${index}AreaSector`] && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors[`actividad${index}AreaSector`]}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2" data-error={`actividad${index}Descripcion`}>
+                <div
+                  className="space-y-2"
+                  data-error={`actividad${index}Descripcion`}
+                >
                   <div className="text-xs font-medium text-black uppercase">
                     DESCRIPCIÓN
                   </div>
@@ -798,10 +977,17 @@ export default function Home() {
                     }
                     className="w-full p-2 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   />
-                  {errors[`actividad${index}Descripcion`] && <p className="text-red-500 text-xs mt-1">{errors[`actividad${index}Descripcion`]}</p>}
+                  {errors[`actividad${index}Descripcion`] && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors[`actividad${index}Descripcion`]}
+                    </p>
+                  )}
                 </div>
 
-                <div className="space-y-2" data-error={`actividad${index}Finalizada`}>
+                <div
+                  className="space-y-2"
+                  data-error={`actividad${index}Finalizada`}
+                >
                   <div className="text-xs font-medium text-black uppercase">
                     FINALIZADA (S/NO)
                   </div>
@@ -816,7 +1002,11 @@ export default function Home() {
                     <option value="SI">SI</option>
                     <option value="NO">NO</option>
                   </select>
-                  {errors[`actividad${index}Finalizada`] && <p className="text-red-500 text-xs mt-1">{errors[`actividad${index}Finalizada`]}</p>}
+                  {errors[`actividad${index}Finalizada`] && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors[`actividad${index}Finalizada`]}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -1011,7 +1201,9 @@ export default function Home() {
           onSetTime={handleSetTime}
           currentTime={formData.horarioLlegada}
         />
-        {errors.horarioLlegada && <p className="text-red-500 text-xs mt-1">{errors.horarioLlegada}</p>}
+        {errors.horarioLlegada && (
+          <p className="text-red-500 text-xs mt-1">{errors.horarioLlegada}</p>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
