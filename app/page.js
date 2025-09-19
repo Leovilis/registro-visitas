@@ -57,63 +57,75 @@ export default function Home() {
       setSucursalesDisponibles([]);
     }
   }, [formData.empresa]);
-
- const validateForm = () => {
-  const newErrors = {};
-
-  // Validar campos básicos
-  if (!formData.empresa) newErrors.empresa = "Empresa es requerida";
-  if (!formData.area) newErrors.area = "Área es requerida";
-  if (!formData.sucursal) newErrors.sucursal = "Sucursal es requerida";
-  if (!formData.provincia) newErrors.provincia = "Provincia es requerida";
-  if (!formData.horarioSaludo) newErrors.horarioSaludo = "Horario de saludo es requerido";
-  if (!formData.horarioLlegada) newErrors.horarioLlegada = "Horario de llegada es requerido";
-
-  // Validar al menos un visitante
-  const hasVisitante = formData.visitantes.some(visitante => visitante.trim() !== "");
-  if (!hasVisitante) newErrors.visitantes = "Al menos un visitante es requerido";
-
-  // Validar al menos una sucursal con datos completos
-  const sucursal1Completa = formData.sucursal1.ingreso && formData.sucursal1.egreso && formData.sucursal1.firma;
-  const sucursal2Completa = formData.sucursal2.ingreso && formData.sucursal2.egreso && formData.sucursal2.firma;
-  
-  if (!sucursal1Completa && !sucursal2Completa) {
-    newErrors.sucursales = "Al menos una sucursal debe estar completa con horarios y firma";
-  } else {
-    if (sucursal1Completa) {
-      if (!formData.sucursal1.ingreso) newErrors.sucursal1Ingreso = "Ingreso a sucursal 1 es requerido";
-      if (!formData.sucursal1.egreso) newErrors.sucursal1Egreso = "Egreso de sucursal 1 es requerido";
-      if (!formData.sucursal1.firma) newErrors.sucursal1Firma = "Firma de sucursal 1 es requerida";
+  // Agregar este useEffect después del useEffect existente
+  useEffect(() => {
+    // Registrar Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('Service Worker registrado exitosamente:', registration.scope);
+        })
+        .catch((error) => {
+          console.log('Error al registrar Service Worker:', error);
+        });
     }
-    
-    if (sucursal2Completa) {
-      if (!formData.sucursal2.ingreso) newErrors.sucursal2Ingreso = "Ingreso a sucursal 2 es requerido";
-      if (!formData.sucursal2.egreso) newErrors.sucursal2Egreso = "Egreso de sucursal 2 es requerido";
-      if (!formData.sucursal2.firma) newErrors.sucursal2Firma = "Firma de sucursal 2 es requerida";
+  }, []);
+  const validateForm = () => {
+    const newErrors = {};
+
+    // Validar campos básicos
+    if (!formData.empresa) newErrors.empresa = "Empresa es requerida";
+    if (!formData.area) newErrors.area = "Área es requerida";
+    if (!formData.sucursal) newErrors.sucursal = "Sucursal es requerida";
+    if (!formData.provincia) newErrors.provincia = "Provincia es requerida";
+    if (!formData.horarioSaludo) newErrors.horarioSaludo = "Horario de saludo es requerido";
+    if (!formData.horarioLlegada) newErrors.horarioLlegada = "Horario de llegada es requerido";
+
+    // Validar al menos un visitante
+    const hasVisitante = formData.visitantes.some(visitante => visitante.trim() !== "");
+    if (!hasVisitante) newErrors.visitantes = "Al menos un visitante es requerido";
+
+    // Validar al menos una sucursal con datos completos
+    const sucursal1Completa = formData.sucursal1.ingreso && formData.sucursal1.egreso && formData.sucursal1.firma;
+    const sucursal2Completa = formData.sucursal2.ingreso && formData.sucursal2.egreso && formData.sucursal2.firma;
+
+    if (!sucursal1Completa && !sucursal2Completa) {
+      newErrors.sucursales = "Al menos una sucursal debe estar completa con horarios y firma";
+    } else {
+      if (sucursal1Completa) {
+        if (!formData.sucursal1.ingreso) newErrors.sucursal1Ingreso = "Ingreso a sucursal 1 es requerido";
+        if (!formData.sucursal1.egreso) newErrors.sucursal1Egreso = "Egreso de sucursal 1 es requerido";
+        if (!formData.sucursal1.firma) newErrors.sucursal1Firma = "Firma de sucursal 1 es requerida";
+      }
+
+      if (sucursal2Completa) {
+        if (!formData.sucursal2.ingreso) newErrors.sucursal2Ingreso = "Ingreso a sucursal 2 es requerido";
+        if (!formData.sucursal2.egreso) newErrors.sucursal2Egreso = "Egreso de sucursal 2 es requerido";
+        if (!formData.sucursal2.firma) newErrors.sucursal2Firma = "Firma de sucursal 2 es requerida";
+      }
     }
-  }
 
-  // Validar actividades
-  formData.actividades.forEach((actividad, index) => {
-    if (actividad.inicio || actividad.fin || actividad.areaSector || actividad.descripcion || actividad.finalizada) {
-      if (!actividad.inicio) newErrors[`actividad${index}Inicio`] = "Hora de inicio es requerida";
-      if (!actividad.fin) newErrors[`actividad${index}Fin`] = "Hora de finalización es requerida";
-      if (!actividad.areaSector) newErrors[`actividad${index}AreaSector`] = "Área/sector es requerido";
-      if (!actividad.descripcion) newErrors[`actividad${index}Descripcion`] = "Descripción es requerida";
-      if (!actividad.finalizada) newErrors[`actividad${index}Finalizada`] = "Indicación de finalización es requerida";
-    }
-  });
+    // Validar actividades
+    formData.actividades.forEach((actividad, index) => {
+      if (actividad.inicio || actividad.fin || actividad.areaSector || actividad.descripcion || actividad.finalizada) {
+        if (!actividad.inicio) newErrors[`actividad${index}Inicio`] = "Hora de inicio es requerida";
+        if (!actividad.fin) newErrors[`actividad${index}Fin`] = "Hora de finalización es requerida";
+        if (!actividad.areaSector) newErrors[`actividad${index}AreaSector`] = "Área/sector es requerido";
+        if (!actividad.descripcion) newErrors[`actividad${index}Descripcion`] = "Descripción es requerida";
+        if (!actividad.finalizada) newErrors[`actividad${index}Finalizada`] = "Indicación de finalización es requerida";
+      }
+    });
 
-  // NOTA: La firma de documentación ya no es requerida, se eliminó esta validación
+    // NOTA: La firma de documentación ya no es requerida, se eliminó esta validación
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     // Limpiar error del campo cuando se modifica
     if (errors[name]) {
       setErrors((prev) => {
@@ -128,7 +140,7 @@ export default function Home() {
     const newVisitantes = [...formData.visitantes];
     newVisitantes[index] = value;
     setFormData((prev) => ({ ...prev, visitantes: newVisitantes }));
-    
+
     // Limpiar error de visitantes si se agrega al menos uno
     if (errors.visitantes && newVisitantes.some(v => v.trim() !== "")) {
       setErrors((prev) => {
@@ -143,7 +155,7 @@ export default function Home() {
     const newActividades = [...formData.actividades];
     newActividades[index][field] = value;
     setFormData((prev) => ({ ...prev, actividades: newActividades }));
-    
+
     // Limpiar error del campo cuando se modifica
     const errorKey = `actividad${index}${field.charAt(0).toUpperCase() + field.slice(1)}`;
     if (errors[errorKey]) {
@@ -191,7 +203,7 @@ export default function Home() {
         [field]: value,
       },
     }));
-    
+
     // Limpiar error del campo cuando se modifica
     const errorKey = `sucursal${sucursalNum}${field.charAt(0).toUpperCase() + field.slice(1)}`;
     if (errors[errorKey]) {
@@ -201,12 +213,12 @@ export default function Home() {
         return newErrors;
       });
     }
-    
+
     // Limpiar error general de sucursales si se completa una sucursal
     if (errors.sucursales) {
       const sucursal1Completa = formData.sucursal1.ingreso && formData.sucursal1.egreso && formData.sucursal1.firma;
       const sucursal2Completa = formData.sucursal2.ingreso && formData.sucursal2.egreso && formData.sucursal2.firma;
-      
+
       if (sucursal1Completa || sucursal2Completa) {
         setErrors((prev) => {
           const newErrors = { ...prev };
@@ -229,7 +241,7 @@ export default function Home() {
           firma: signature,
         },
       }));
-      
+
       // Limpiar error de firma de documentación
       if (errors.documentacionFirma) {
         setErrors((prev) => {
@@ -265,7 +277,7 @@ export default function Home() {
       handleActividadChange(index, fieldName, time);
     } else {
       setFormData((prev) => ({ ...prev, [field]: time }));
-      
+
       // Limpiar error del campo cuando se modifica
       if (errors[field]) {
         setErrors((prev) => {
@@ -623,7 +635,7 @@ export default function Home() {
             </tr>
           </tbody>
         </table>
-        
+
         {errors.sucursales && <p className="text-red-500 text-xs mt-1 mb-4 text-center">{errors.sucursales}</p>}
 
         {/* Actividades - Versión Desktop */}

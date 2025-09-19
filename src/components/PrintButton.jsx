@@ -35,6 +35,12 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
   const prepareDataForSheets = (formData) => {
     const currentTimestamp = new Date().toISOString().split("T")[0];
     
+    // Debug: verificar que los campos existen
+    console.log('Datos del formulario para Google Sheets:', {
+      horarioSaludo: formData.horarioSaludo,
+      horarioLlegada: formData.horarioLlegada
+    });
+    
     return {
       timestamp: currentTimestamp,
       empresa: formData.empresa || '',
@@ -42,7 +48,8 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
       area: formData.area || '',
       sucursal: formData.sucursal || '',
       provincia: formData.provincia || '',
-      horarioSaludo: formData.horarioSaludo || '',
+      // IMPORTANTE: Asegurar que estos campos se envían correctamente
+      horarioSaludo: formData.horarioSaludo || '', // Horario de salida (G)
       // Convertir array de visitantes a string separado por comas
       visitantes: formData.visitantes ? formData.visitantes.filter(v => v.trim() !== '').join(', ') : '',
       // Datos de sucursales
@@ -59,9 +66,12 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
         formData.documentacion.entregados.filter(doc => doc.nombre).map(doc => doc.nombre).join(', ') : '',
       documentosRecibidos: formData.documentacion?.recibidos ? 
         formData.documentacion.recibidos.filter(doc => doc.nombre).map(doc => doc.nombre).join(', ') : '',
-      horarioLlegada: formData.horarioLlegada || ''
+      // IMPORTANTE: Asegurar que este campo se envía correctamente
+      horarioLlegada: formData.horarioLlegada || '', // Horario de llegada (P)
+      totalVisita: formData.horarioVisita || '' // Este campo puede ser calculado o no
     };
   };
+
   // Función para crear el contenido imprimible
   const createPrintableContent = () => {
     return `
@@ -174,7 +184,7 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
                 <td style="border: 1px solid black; padding: 8px; text-align: center; background-color: white; color: black;">
                   ${formData.sucursal1?.ingreso || ''}
                 </td>
-                <td style="border: 1px solid black; padding: '8px'; text-align: center; background-color: white; color: black;">
+                <td style="border: 1px solid black; padding: 8px; text-align: center; background-color: white; color: black;">
                   ${formData.sucursal1?.egreso || ''}
                 </td>
                 <td style="border: 1px solid black; padding: 8px; text-align: center; height: 60px; background-color: white; color: black;">
@@ -189,13 +199,13 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
             <thead>
               <tr>
                 <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
-                  HORARIO OF INGRESO A LA SUCURSAL 2
+                  HORARIO DE INGRESO A LA SUCURSAL 2
                 </th>
                 <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
-                  HORARIO OF EGRESO DE LA SUCURSAL 2
+                  HORARIO DE EGRESO DE LA SUCURSAL 2
                 </th>
                 <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">
-                  FIRMA Y ACLARACIÓN DEL RESPONSABLE OF SUCURSAL 2
+                  FIRMA Y ACLARACIÓN DEL RESPONSABLE DE SUCURSAL 2
                 </th>
               </tr>
             </thead>
@@ -476,6 +486,10 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
     try {
       // Preparar y enviar datos a Google Sheets
       const sheetData = prepareDataForSheets(formData);
+      
+      // Debug: mostrar los datos que se van a enviar
+      console.log('Enviando datos a Google Sheets:', sheetData);
+      
       await sendDataToGoogleSheets(sheetData);
 
       const tempContainer = document.createElement('div');
@@ -620,4 +634,3 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
 };
 
 export default PrintButton;
-
