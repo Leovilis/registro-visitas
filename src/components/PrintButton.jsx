@@ -2,16 +2,16 @@ import { useRef, useState } from 'react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 
-const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) => {
+const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors, onFormSaved }) => {
   const componentRef = useRef();
   const [isGenerating, setIsGenerating] = useState(false);
-  
+
   // Función para enviar datos a Google Sheets
   const sendDataToGoogleSheets = async (data) => {
     try {
       // URL de tu Google Apps Script Web App
-      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwNajzLN8o7EL47nstxwv6I9vMsj4_XemeF4T6H_wBhs9kUReyVot1quYvSO5gsV0ZLnw/exec';
-      
+      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxf22vPMjkSb5_Kw1F5GnlABuNdM9G94TYbCr5RJlx02fxm4rsBaycryYJqyrqhurFaLw/exec';
+
       const response = await fetch(WEB_APP_URL, {
         method: 'POST',
         headers: {
@@ -34,13 +34,20 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
   // Función para preparar los datos para Google Sheets
   const prepareDataForSheets = (formData) => {
     const currentTimestamp = new Date().toISOString().split("T")[0];
-    
-    // Debug: verificar que los campos existen
-    console.log('Datos del formulario para Google Sheets:', {
-      horarioSaludo: formData.horarioSaludo,
-      horarioLlegada: formData.horarioLlegada
-    });
-    
+// // Debug específico para el visitante
+//   console.log('=== DEBUG VISITANTE ===');
+//   console.log('formData completo:', formData);
+//   console.log('formData.visitante:', formData.visitante);
+//   console.log('Tipo de formData.visitante:', typeof formData.visitante);
+//   console.log('¿Es undefined?:', formData.visitante === undefined);
+//   console.log('¿Es null?:', formData.visitante === null);
+//   console.log('¿Es string vacío?:', formData.visitante === '');
+//     // Debug: verificar que los campos existen
+//     console.log('Datos del formulario para Google Sheets:', {
+//       horarioSaludo: formData.horarioSaludo,
+//       horarioLlegada: formData.horarioLlegada
+//     });
+
     return {
       timestamp: currentTimestamp,
       empresa: formData.empresa || '',
@@ -50,21 +57,22 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
       provincia: formData.provincia || '',
       // IMPORTANTE: Asegurar que estos campos se envían correctamente
       horarioSaludo: formData.horarioSaludo || '', // Horario de salida (G)
-      // Convertir array de visitantes a string separado por comas
-      visitantes: formData.visitantes ? formData.visitantes.filter(v => v.trim() !== '').join(', ') : '',
+      // Convertir array de visitante a string separado por comas
+      // visitante: formData.visitante ? formData.visitante.filter(v => v.trim() !== '').join(', ') : '',
+      visitante: formData.visitante || '',
       // Datos de sucursales
       sucursal1Ingreso: formData.sucursal1?.ingreso || '',
       sucursal1Egreso: formData.sucursal1?.egreso || '',
       sucursal2Ingreso: formData.sucursal2?.ingreso || '',
       sucursal2Egreso: formData.sucursal2?.egreso || '',
       // Actividades (convertir a string JSON para almacenar)
-      actividades: formData.actividades ? JSON.stringify(formData.actividades.filter(act => 
+      actividades: formData.actividades ? JSON.stringify(formData.actividades.filter(act =>
         act.inicio || act.fin || act.areaSector || act.descripcion || act.finalizada
       )) : '',
       // Documentos entregados y recibidos (solo nombres, sin firmas)
-      documentosEntregados: formData.documentacion?.entregados ? 
+      documentosEntregados: formData.documentacion?.entregados ?
         formData.documentacion.entregados.filter(doc => doc.nombre).map(doc => doc.nombre).join(', ') : '',
-      documentosRecibidos: formData.documentacion?.recibidos ? 
+      documentosRecibidos: formData.documentacion?.recibidos ?
         formData.documentacion.recibidos.filter(doc => doc.nombre).map(doc => doc.nombre).join(', ') : '',
       // IMPORTANTE: Asegurar que este campo se envía correctamente
       horarioLlegada: formData.horarioLlegada || '', // Horario de llegada (P)
@@ -137,26 +145,24 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
           </table>
         </div>
 
-        <!-- Visitantes -->
-        <div style="margin-bottom: 20px;">
-          <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: black;">
-            NOMBRE Y APELLIDO: (personas que realizan la visita)
-          </h3>
-          <table style="width: 100%; border-collapse: collapse;">
-            <tbody>
-              ${formData.visitantes ? formData.visitantes.filter(v => v.trim() !== '').map((visitante, index) => `
+        <!-- Visitante -->
+          <div style="margin-bottom: 20px;">
+            <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 10px; color: black;">
+              NOMBRE Y APELLIDO: (persona que realiza la visita)
+            </h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tbody>
                 <tr>
                   <td style="border: 1px solid black; padding: 8px; width: 20%; font-weight: bold; background-color: white; color: black;">
-                    Visitante ${index + 1}:
+                    Visitante:
                   </td>
                   <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">
-                    ${visitante}
+                    ${formData.visitante || ''}
                   </td>
                 </tr>
-              `).join('') : ''}
-            </tbody>
-          </table>
-        </div>
+              </tbody>
+            </table>
+          </div>
 
         <!-- Actividades realizadas -->
         <div style="margin-bottom: 20px;">
@@ -349,13 +355,20 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
     `;
   };
 
-  // Función para imprimir
+  // Función para imprimir con advertencia
   const handlePrint = () => {
+    const proceed = window.confirm(
+      'La impresión no guarda automáticamente los datos. ¿Quieres continuar? ' +
+      'Recomendamos usar "Guardar PDF" para conservar la información.'
+    );
+
+    if (!proceed) return;
+
     setIsGenerating(true);
-    
+
     try {
       const printContent = createPrintableContent();
-      
+
       const printStyles = `
         <style>
           @page { 
@@ -440,9 +453,9 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
 
       const blob = new Blob([fullHTML], { type: 'text/html' });
       const url = URL.createObjectURL(blob);
-      
+
       const printWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
-      
+
       if (printWindow) {
         printWindow.document.write(fullHTML);
         printWindow.document.close();
@@ -452,14 +465,14 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
         iframe.style.left = '-9999px';
         iframe.style.width = '210mm';
         iframe.style.height = '297mm';
-        
+
         document.body.appendChild(iframe);
-        
+
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
         iframeDoc.open();
         iframeDoc.write(fullHTML);
         iframeDoc.close();
-        
+
         setTimeout(() => {
           iframe.contentWindow.print();
           setTimeout(() => {
@@ -486,10 +499,10 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
     try {
       // Preparar y enviar datos a Google Sheets
       const sheetData = prepareDataForSheets(formData);
-      
+
       // Debug: mostrar los datos que se van a enviar
       console.log('Enviando datos a Google Sheets:', sheetData);
-      
+
       await sendDataToGoogleSheets(sheetData);
 
       const tempContainer = document.createElement('div');
@@ -499,7 +512,7 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
       tempContainer.style.zIndex = '9999';
       tempContainer.style.background = 'white';
       tempContainer.innerHTML = createPrintableContent();
-      
+
       document.body.appendChild(tempContainer);
 
       // Esperar a que todas las imágenes se carguen
@@ -510,7 +523,7 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
           if (img.complete && img.naturalHeight !== 0) {
             return Promise.resolve();
           }
-          
+
           return new Promise((resolve, reject) => {
             img.onload = resolve;
             img.onerror = resolve; // Resolvemos incluso en error para no bloquear
@@ -518,7 +531,7 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
             setTimeout(resolve, 2000);
           });
         });
-        
+
         await Promise.all(imageLoadPromises);
       }
 
@@ -552,27 +565,37 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
       });
 
       const imgData = canvas.toDataURL('image/jpeg', 0.9);
-      
+
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = pdfWidth;
       const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-      
+
       // Añadir la imagen al PDF
       pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-      
+
       // Guardar el PDF
       const fileName = `registro_visitas_${formData.empresa || 'sin_empresa'}_${formData.fechaVisita || 'sin_fecha'}.pdf`;
       pdf.save(fileName);
-      
+
+      // Marcar como guardado y limpiar formulario después de guardar el PDF
+      if (onFormSaved) {
+        onFormSaved();
+      }
+
       // Limpiar formulario después de guardar el PDF
       if (onClearForm) {
-        onClearForm();
+        setTimeout(() => {
+          onClearForm();
+        }, 1000);
       }
-      
+
     } catch (error) {
       console.warn('Advertencia al generar PDF (puede que se haya generado igualmente):', error);
-      // No mostramos alerta para evitar confusión si el PDF se generó correctamente
+      // Marcar como guardado incluso si hay advertencias
+      if (onFormSaved) {
+        onFormSaved();
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -607,7 +630,7 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors }) =
       >
         {isGenerating ? 'Imprimiendo...' : 'Imprimir'}
       </button>
-      
+
       <button
         onClick={handleSavePDFWithValidation}
         disabled={isGenerating}
