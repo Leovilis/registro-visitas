@@ -461,12 +461,13 @@ export default function Home() {
           </div>
 
           <div className="space-y-2" data-error="horarioSaludo">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700" >
               HORARIO DE SALIDA DE ADMINISTRACIÓN: *
             </label>
             <input
               type="text"
               name="horarioSaludo"
+              placeholder="Formato de hora 00:00"
               value={formData.horarioSaludo}
               onChange={handleChange}
               className={`w-full p-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
