@@ -67,7 +67,7 @@ export const hasSignificantData = (formData) => {
     formData.sucursal2.egreso ||
     formData.sucursal2.firma ||
     formData.actividades.some(act => 
-      act.inicio || act.fin || act.areaSector || act.descripcion || act.finalizada
+      act.descripcion || act.finalizada
     ) ||
     formData.documentacion.firma ||
     formData.documentacion.entregados.some(doc => doc.nombre || doc.firmaRecibio) ||
@@ -207,9 +207,6 @@ export const getDefaultFormData = () => ({
   },
   actividades: [
     {
-      inicio: "",
-      fin: "",
-      areaSector: "",
       descripcion: "",
       finalizada: "",
     },
@@ -252,13 +249,9 @@ export const validateFormData = (formData) => {
 
   // Validar actividades
   formData.actividades.forEach((actividad, index) => {
-    const hasActivityData = actividad.inicio || actividad.fin || actividad.areaSector || 
-                           actividad.descripcion || actividad.finalizada;
+    const hasActivityData = actividad.descripcion || actividad.finalizada;
     
     if (hasActivityData) {
-      if (!actividad.inicio) errors[`actividad${index}Inicio`] = "Hora de inicio es requerida";
-      if (!actividad.fin) errors[`actividad${index}Fin`] = "Hora de finalización es requerida";
-      if (!actividad.areaSector) errors[`actividad${index}AreaSector`] = "Área/sector es requerido";
       if (!actividad.descripcion) errors[`actividad${index}Descripcion`] = "Descripción es requerida";
       if (!actividad.finalizada) errors[`actividad${index}Finalizada`] = "Indicación de finalización es requerida";
     }
@@ -281,7 +274,7 @@ export const getFormStats = (formData) => {
     totalFields: 6, // campos básicos
     // visitanteCount: formData.visitante.filter(v => v.trim() !== '').length,
     actividadesCount: formData.actividades.filter(act => 
-      act.inicio || act.fin || act.areaSector || act.descripcion || act.finalizada
+      act.descripcion || act.finalizada
     ).length,
     documentosEntregados: formData.documentacion.entregados.filter(doc => doc.nombre).length,
     documentosRecibidos: formData.documentacion.recibidos.filter(doc => doc.nombre).length,

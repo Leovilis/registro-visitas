@@ -34,19 +34,6 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors, onF
   // Función para preparar los datos para Google Sheets
   const prepareDataForSheets = (formData) => {
     const currentTimestamp = new Date().toISOString().split("T")[0];
-// // Debug específico para el visitante
-//   console.log('=== DEBUG VISITANTE ===');
-//   console.log('formData completo:', formData);
-//   console.log('formData.visitante:', formData.visitante);
-//   console.log('Tipo de formData.visitante:', typeof formData.visitante);
-//   console.log('¿Es undefined?:', formData.visitante === undefined);
-//   console.log('¿Es null?:', formData.visitante === null);
-//   console.log('¿Es string vacío?:', formData.visitante === '');
-//     // Debug: verificar que los campos existen
-//     console.log('Datos del formulario para Google Sheets:', {
-//       horarioSaludo: formData.horarioSaludo,
-//       horarioLlegada: formData.horarioLlegada
-//     });
 
     return {
       timestamp: currentTimestamp,
@@ -57,17 +44,15 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors, onF
       provincia: formData.provincia || '',
       // IMPORTANTE: Asegurar que estos campos se envían correctamente
       horarioSaludo: formData.horarioSaludo || '', // Horario de salida (G)
-      // Convertir array de visitante a string separado por comas
-      // visitante: formData.visitante ? formData.visitante.filter(v => v.trim() !== '').join(', ') : '',
       visitante: formData.visitante || '',
       // Datos de sucursales
       sucursal1Ingreso: formData.sucursal1?.ingreso || '',
       sucursal1Egreso: formData.sucursal1?.egreso || '',
       sucursal2Ingreso: formData.sucursal2?.ingreso || '',
       sucursal2Egreso: formData.sucursal2?.egreso || '',
-      // Actividades (convertir a string JSON para almacenar)
+      // Actividades simplificadas (solo descripción y finalizada)
       actividades: formData.actividades ? JSON.stringify(formData.actividades.filter(act =>
-        act.inicio || act.fin || act.areaSector || act.descripcion || act.finalizada
+        act.descripcion || act.finalizada
       )) : '',
       // Documentos entregados y recibidos (solo nombres, sin firmas)
       documentosEntregados: formData.documentacion?.entregados ?
@@ -230,24 +215,18 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors, onF
             </tbody>
           </table>
 
-          <!-- Actividades detalladas -->
+          <!-- Actividades simplificadas -->
           ${formData.actividades && formData.actividades.length > 0 ? `
             <table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;">
               <thead>
                 <tr>
-                  <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">HS. INICIO</th>
-                  <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">HS. FINALIZACIÓN</th>
-                  <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">ÁREA/SECTOR DE LA SUCURSAL</th>
                   <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">DESCRIPCIÓN DE LA ACTIVIDAD</th>
                   <th style="border: 1px solid black; padding: 8px; font-size: 10px; background-color: white; color: black;">¿ACTIVIDAD FINALIZADA? (S/NO)</th>
                 </tr>
               </thead>
               <tbody>
-                ${formData.actividades.map(actividad => `
+                ${formData.actividades.filter(actividad => actividad.descripcion || actividad.finalizada).map(actividad => `
                   <tr>
-                    <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.inicio || ''}</td>
-                    <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.fin || ''}</td>
-                    <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.areaSector || ''}</td>
                     <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.descripcion || ''}</td>
                     <td style="border: 1px solid black; padding: 8px; background-color: white; color: black;">${actividad.finalizada || ''}</td>
                   </tr>

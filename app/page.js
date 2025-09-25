@@ -128,20 +128,6 @@ export default function Home() {
     }
   };
 
-  // const handleVisitanteChange = (index, value) => {
-  //   const newVisitantes = [...formData.visitantes];
-  //   newVisitantes[index] = value;
-  //   setFormData((prev) => ({ ...prev, visitantes: newVisitantes }));
-
-  //   if (errors.visitantes && newVisitantes.some((v) => v.trim() !== "")) {
-  //     setErrors((prev) => {
-  //       const newErrors = { ...prev };
-  //       delete newErrors.visitantes;
-  //       return newErrors;
-  //     });
-  //   }
-  // };
-
   const handleActividadChange = (index, field, value) => {
     const newActividades = [...formData.actividades];
     newActividades[index][field] = value;
@@ -165,9 +151,6 @@ export default function Home() {
       actividades: [
         ...prev.actividades,
         {
-          inicio: "",
-          fin: "",
-          areaSector: "",
           descripcion: "",
           finalizada: "",
         },
@@ -267,11 +250,6 @@ export default function Home() {
       const sucursalNum = parts[1];
       const fieldName = parts[2];
       handleSucursalChange(sucursalNum, fieldName, time);
-    } else if (field.includes("actividad")) {
-      const parts = field.split("-");
-      const index = parseInt(parts[1]);
-      const fieldName = parts[2];
-      handleActividadChange(index, fieldName, time);
     } else {
       setFormData((prev) => ({ ...prev, [field]: time }));
 
@@ -712,87 +690,22 @@ export default function Home() {
             </p>
           )}
 
-          {/* Actividades - Versión Desktop */}
+          {/* Actividades Simplificadas - Versión Desktop */}
           <div className="hidden md:block">
             <table className="min-w-full divide-y divide-gray-200 border border-gray-200 mb-4">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
-                    HS. INICIO
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
-                    HS. FINALIZACION
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
-                    AREA/SECTOR DE LA SUCURSAL
-                  </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
                     DESCRIPCIÓN DE LA ACTIVIDAD
                   </th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-black uppercase tracking-wider border border-gray-200">
-                    ¿ACTIVIDAD FINALIZADA? (SI)/NO)
+                    ¿ACTIVIDAD FINALIZADA? (SI/NO)
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {formData.actividades.map((actividad, index) => (
                   <tr key={index}>
-                    <td
-                      className="px-4 py-2 border border-gray-200"
-                      data-error={`actividad${index}Inicio`}
-                    >
-                      <div className="flex justify-center md:justify-start">
-                        <TimeButton
-                          field={`actividad-${index}-inicio`}
-                          onSetTime={handleSetTime}
-                          currentTime={actividad.inicio}
-                        />
-                      </div>
-                      {errors[`actividad${index}Inicio`] && (
-                        <p className="text-red-500 text-xs mt-1 text-center">
-                          {errors[`actividad${index}Inicio`]}
-                        </p>
-                      )}
-                    </td>
-                    <td
-                      className="px-4 py-2 border border-gray-200"
-                      data-error={`actividad${index}Fin`}
-                    >
-                      <div className="flex justify-center md:justify-start">
-                        <TimeButton
-                          field={`actividad-${index}-fin`}
-                          onSetTime={handleSetTime}
-                          currentTime={actividad.fin}
-                        />
-                      </div>
-                      {errors[`actividad${index}Fin`] && (
-                        <p className="text-red-500 text-xs mt-1 text-center">
-                          {errors[`actividad${index}Fin`]}
-                        </p>
-                      )}
-                    </td>
-                    <td
-                      className="px-4 py-2 border text-gray-700 border-gray-200"
-                      data-error={`actividad${index}AreaSector`}
-                    >
-                      <input
-                        type="text"
-                        value={actividad.areaSector}
-                        onChange={(e) =>
-                          handleActividadChange(
-                            index,
-                            "areaSector",
-                            e.target.value
-                          )
-                        }
-                        className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                      />
-                      {errors[`actividad${index}AreaSector`] && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors[`actividad${index}AreaSector`]}
-                        </p>
-                      )}
-                    </td>
                     <td
                       className="px-4 py-2 border text-gray-700 border-gray-200"
                       data-error={`actividad${index}Descripcion`}
@@ -807,6 +720,7 @@ export default function Home() {
                             e.target.value
                           )
                         }
+                        placeholder="Describa la actividad realizada"
                         className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                       />
                       {errors[`actividad${index}Descripcion`] && (
@@ -846,134 +760,59 @@ export default function Home() {
             </table>
           </div>
 
-          {/* Actividades - Versión Mobile */}
+          {/* Actividades Simplificadas - Versión Mobile */}
           <div className="md:hidden">
             {formData.actividades.map((actividad, index) => (
               <div
                 key={index}
                 className="border border-gray-200 rounded-lg p-4 mb-4 bg-white"
               >
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div
-                    className="space-y-2"
-                    data-error={`actividad${index}Inicio`}
-                  >
-                    <div className="text-xs font-medium text-black uppercase">
-                      HS. INICIO
-                    </div>
-                    <div className="flex justify-center">
-                      <TimeButton
-                        field={`actividad-${index}-inicio`}
-                        onSetTime={handleSetTime}
-                        currentTime={actividad.inicio}
-                      />
-                    </div>
-                    {errors[`actividad${index}Inicio`] && (
-                      <p className="text-red-500 text-xs mt-1 text-center">
-                        {errors[`actividad${index}Inicio`]}
-                      </p>
-                    )}
-                  </div>
-
-                  <div
-                    className="space-y-2"
-                    data-error={`actividad${index}Fin`}
-                  >
-                    <div className="text-xs font-medium text-black uppercase">
-                      HS. FINALIZACION
-                    </div>
-                    <div className="flex justify-center">
-                      <TimeButton
-                        field={`actividad-${index}-fin`}
-                        onSetTime={handleSetTime}
-                        currentTime={actividad.fin}
-                      />
-                    </div>
-                    {errors[`actividad${index}Fin`] && (
-                      <p className="text-red-500 text-xs mt-1 text-center">
-                        {errors[`actividad${index}Fin`]}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
                 <div
                   className="mb-4"
-                  data-error={`actividad${index}AreaSector`}
+                  data-error={`actividad${index}Descripcion`}
                 >
                   <div className="text-xs font-medium text-black uppercase mb-1">
-                    AREA/SECTOR DE LA SUCURSAL
+                    DESCRIPCIÓN DE LA ACTIVIDAD
                   </div>
                   <input
                     type="text"
-                    value={actividad.areaSector}
+                    value={actividad.descripcion}
                     onChange={(e) =>
-                      handleActividadChange(index, "areaSector", e.target.value)
+                      handleActividadChange(index, "descripcion", e.target.value)
                     }
+                    placeholder="Describa la actividad realizada"
                     className="w-full p-2 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   />
-                  {errors[`actividad${index}AreaSector`] && (
+                  {errors[`actividad${index}Descripcion`] && (
                     <p className="text-red-500 text-xs mt-1">
-                      {errors[`actividad${index}AreaSector`]}
+                      {errors[`actividad${index}Descripcion`]}
                     </p>
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div
-                    className="space-y-2"
-                    data-error={`actividad${index}Descripcion`}
-                  >
-                    <div className="text-xs font-medium text-black uppercase">
-                      DESCRIPCIÓN
-                    </div>
-                    <input
-                      type="text"
-                      value={actividad.descripcion}
-                      onChange={(e) =>
-                        handleActividadChange(
-                          index,
-                          "descripcion",
-                          e.target.value
-                        )
-                      }
-                      className="w-full p-2 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    {errors[`actividad${index}Descripcion`] && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {errors[`actividad${index}Descripcion`]}
-                      </p>
-                    )}
+                <div
+                  className="space-y-2"
+                  data-error={`actividad${index}Finalizada`}
+                >
+                  <div className="text-xs font-medium text-black uppercase">
+                    ¿ACTIVIDAD FINALIZADA? (SI/NO)
                   </div>
-
-                  <div
-                    className="space-y-2"
-                    data-error={`actividad${index}Finalizada`}
+                  <select
+                    value={actividad.finalizada}
+                    onChange={(e) =>
+                      handleActividadChange(index, "finalizada", e.target.value)
+                    }
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <div className="text-xs font-medium text-black uppercase">
-                      FINALIZADA (S/NO)
-                    </div>
-                    <select
-                      value={actividad.finalizada}
-                      onChange={(e) =>
-                        handleActividadChange(
-                          index,
-                          "finalizada",
-                          e.target.value
-                        )
-                      }
-                      className="w-full p-2 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">-</option>
-                      <option value="SI">SI</option>
-                      <option value="NO">NO</option>
-                    </select>
-                    {errors[`actividad${index}Finalizada`] && (
-                      <p className="text-red-500 text-xs mt-1">
-                        {errors[`actividad${index}Finalizada`]}
-                      </p>
-                    )}
-                  </div>
+                    <option value="">-</option>
+                    <option value="SI">SI</option>
+                    <option value="NO">NO</option>
+                  </select>
+                  {errors[`actividad${index}Finalizada`] && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors[`actividad${index}Finalizada`]}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
