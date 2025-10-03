@@ -203,7 +203,7 @@ function App() {
 
   return (
     <div className="container mx-auto p-4 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold text-gray-800 mb-4">REGISTRO DE VISITAS</h1>
+      <h1 className="text-2xl font-bold text-gray-800 mb-4">REGISTRO DE VISITA</h1>
       <p className="text-sm text-gray-600 mb-6">
         Para completar este formulario utilice como referencia el instructivo "I-RD-01" disponible en la carpeta Calidad Genéricos/Instructivos
       </p>

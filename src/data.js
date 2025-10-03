@@ -41,16 +41,19 @@ export const sucursalesPorEmpresa = {
 };
 
 export const areas = [
-  "AUDITORIA",
+  "AUDITORIA BEBIDAS",
+  "AUDITORIA PRODUCCION",
   "CALIDAD",
   "COMPRAS",
   "CONTABLE",
-  "CONTROL DE GESTION",
   "CONTROL INTERNO",
   "DATA ANALYTICS",
   "FINANZAS",
-  "RRHH",
-  "RSS",
+  "HABILITACIONES E INOCUIDAD",
+  "MARKETING",
+  "RRHH HARD",
+  "RRHH SOFT",
+  "RSE",
   "SISTEMAS",
 ];
 
