@@ -308,7 +308,7 @@ export default function Home() {
 
       <div className={hasUnsavedChanges ? "mt-10" : ""}>
         <h1 className="text-2xl text-center font-bold text-black mb-4">
-          REGISTRO DE VISITAS
+          REGISTRO DE VISITA
         </h1>
         <p className="text-sm text-center text-black mb-6">
           Para completar este formulario utilice como referencia el instructivo
