@@ -1,7 +1,5 @@
-// app/manifest.ts
-import type { MetadataRoute } from 'next'
-
-export default function manifest(): MetadataRoute.Manifest {
+// app/manifest.js
+export default function manifest() {
   return {
     name: 'Registro de Visitas',
     short_name: 'Visitas',
