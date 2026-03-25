@@ -11,10 +11,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// export const metadata = {
+//   title: "Registro de Visitas",
+//   description: "GRegistro de Visitas",
+// };
+
 export const metadata = {
-  title: "Registro de Visitas",
-  description: "GRegistro de Visitas",
-};
+  manifest: '/manifest.json',
+  themeColor: '#000000',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+}
 
 export default function RootLayout({ children }) {
   return (
