@@ -66,7 +66,7 @@
 //     formData.sucursal2.ingreso ||
 //     formData.sucursal2.egreso ||
 //     formData.sucursal2.firma ||
-//     formData.actividades.some(act => 
+//     formData.actividades.some(act =>
 //       act.descripcion || act.finalizada
 //     ) ||
 //     formData.documentacion.firma ||
@@ -130,7 +130,7 @@
 
 //     window.addEventListener('beforeunload', handleBeforeUnload);
 //     window.addEventListener('popstate', handlePopState);
-    
+
 //     if (hasUnsavedChanges && !isFormSaved) {
 //       window.history.pushState(null, '', window.location.href);
 //     }
@@ -160,16 +160,16 @@
 //  */
 // export const handleDataRecovery = (setFormData) => {
 //   const savedData = loadFormFromLocalStorage();
-  
+
 //   if (savedData && savedData.savedAt) {
 //     const hoursDiff = getHoursSinceSaved(savedData.savedAt);
-    
+
 //     if (hoursDiff < AUTO_SAVE_CONFIG.MAX_AGE_HOURS) {
 //       const formattedTime = formatDateTime(savedData.savedAt);
 //       const restore = window.confirm(
 //         `Se encontró un formulario guardado automáticamente el ${formattedTime}. ¿Quieres recuperarlo?`
 //       );
-      
+
 //       if (restore) {
 //         const { savedAt, ...dataToRestore } = savedData;
 //         setFormData(dataToRestore);
@@ -180,7 +180,7 @@
 //       clearLocalStorageBackup();
 //     }
 //   }
-  
+
 //   return false;
 // };
 
@@ -242,7 +242,7 @@
 //   // Validar sucursales
 //   const sucursal1Completa = formData.sucursal1.ingreso && formData.sucursal1.egreso && formData.sucursal1.firma;
 //   const sucursal2Completa = formData.sucursal2.ingreso && formData.sucursal2.egreso && formData.sucursal2.firma;
-  
+
 //   if (!sucursal1Completa && !sucursal2Completa) {
 //     errors.sucursales = "Al menos una sucursal debe estar completa con horarios y firma";
 //   }
@@ -250,7 +250,7 @@
 //   // Validar actividades
 //   formData.actividades.forEach((actividad, index) => {
 //     const hasActivityData = actividad.descripcion || actividad.finalizada;
-    
+
 //     if (hasActivityData) {
 //       if (!actividad.descripcion) errors[`actividad${index}Descripcion`] = "Descripción es requerida";
 //       if (!actividad.finalizada) errors[`actividad${index}Finalizada`] = "Indicación de finalización es requerida";
@@ -273,7 +273,7 @@
 //     fieldsCompleted: 0,
 //     totalFields: 6, // campos básicos
 //     // visitanteCount: formData.visitante.filter(v => v.trim() !== '').length,
-//     actividadesCount: formData.actividades.filter(act => 
+//     actividadesCount: formData.actividades.filter(act =>
 //       act.descripcion || act.finalizada
 //     ).length,
 //     documentosEntregados: formData.documentacion.entregados.filter(doc => doc.nombre).length,
@@ -298,8 +298,8 @@
 //   }
 
 //   stats.completionPercentage = (stats.fieldsCompleted / stats.totalFields) * 100;
-//   stats.hasSignatures = !!(formData.documentacion.firma || 
-//                           formData.sucursal1.firma || 
+//   stats.hasSignatures = !!(formData.documentacion.firma ||
+//                           formData.sucursal1.firma ||
 //                           formData.sucursal2.firma);
 
 //   return stats;
@@ -317,8 +317,8 @@
  */
 const isLocalStorageAvailable = () => {
   try {
-    const testKey = '__localStorage_test__';
-    localStorage.setItem(testKey, 'test');
+    const testKey = "__localStorage_test__";
+    localStorage.setItem(testKey, "test");
     localStorage.removeItem(testKey);
     return true;
   } catch (e) {
@@ -333,12 +333,12 @@ const cookieStorage = {
   setItem: (key, value) => {
     try {
       const expires = new Date();
-      expires.setTime(expires.getTime() + (7 * 24 * 60 * 60 * 1000));
+      expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
       const encodedValue = encodeURIComponent(value);
       document.cookie = `${key}=${encodedValue};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
       return true;
     } catch (e) {
-      console.error('Error guardando en cookies:', e);
+      console.error("Error guardando en cookies:", e);
       return false;
     }
   },
@@ -347,8 +347,8 @@ const cookieStorage = {
     try {
       const name = key + "=";
       const decodedCookie = decodeURIComponent(document.cookie);
-      const cookies = decodedCookie.split(';');
-      
+      const cookies = decodedCookie.split(";");
+
       for (let i = 0; i < cookies.length; i++) {
         let cookie = cookies[i].trim();
         if (cookie.indexOf(name) === 0) {
@@ -357,7 +357,7 @@ const cookieStorage = {
       }
       return null;
     } catch (e) {
-      console.error('Error leyendo cookies:', e);
+      console.error("Error leyendo cookies:", e);
       return null;
     }
   },
@@ -367,10 +367,10 @@ const cookieStorage = {
       document.cookie = `${key}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;SameSite=Lax`;
       return true;
     } catch (e) {
-      console.error('Error eliminando cookie:', e);
+      console.error("Error eliminando cookie:", e);
       return false;
     }
-  }
+  },
 };
 
 /**
@@ -378,8 +378,8 @@ const cookieStorage = {
  */
 const isSessionStorageAvailable = () => {
   try {
-    const testKey = '__sessionStorage_test__';
-    sessionStorage.setItem(testKey, 'test');
+    const testKey = "__sessionStorage_test__";
+    sessionStorage.setItem(testKey, "test");
     sessionStorage.removeItem(testKey);
     return true;
   } catch (e) {
@@ -393,28 +393,30 @@ const isSessionStorageAvailable = () => {
 class SafariCompatibleStorage {
   constructor() {
     this.storageType = this._detectStorageType();
-    console.log('Tipo de almacenamiento detectado:', this.storageType);
+    console.log("Tipo de almacenamiento detectado:", this.storageType);
   }
 
   _detectStorageType() {
     if (isLocalStorageAvailable()) {
-      return 'localStorage';
+      return "localStorage";
     } else if (isSessionStorageAvailable()) {
-      console.warn('localStorage no disponible, usando sessionStorage');
-      return 'sessionStorage';
+      console.warn("localStorage no disponible, usando sessionStorage");
+      return "sessionStorage";
     } else {
-      console.warn('localStorage y sessionStorage no disponibles, usando cookies');
-      return 'cookie';
+      console.warn(
+        "localStorage y sessionStorage no disponibles, usando cookies",
+      );
+      return "cookie";
     }
   }
 
   _getStorage() {
     switch (this.storageType) {
-      case 'localStorage':
+      case "localStorage":
         return localStorage;
-      case 'sessionStorage':
+      case "sessionStorage":
         return sessionStorage;
-      case 'cookie':
+      case "cookie":
         return cookieStorage;
       default:
         return cookieStorage;
@@ -427,16 +429,16 @@ class SafariCompatibleStorage {
       storage.setItem(key, value);
       return true;
     } catch (e) {
-      console.error('Error guardando datos:', e);
-      
-      if (this.storageType === 'localStorage' && isSessionStorageAvailable()) {
-        this.storageType = 'sessionStorage';
+      console.error("Error guardando datos:", e);
+
+      if (this.storageType === "localStorage" && isSessionStorageAvailable()) {
+        this.storageType = "sessionStorage";
         return this.setItem(key, value);
-      } else if (this.storageType !== 'cookie') {
-        this.storageType = 'cookie';
+      } else if (this.storageType !== "cookie") {
+        this.storageType = "cookie";
         return this.setItem(key, value);
       }
-      
+
       return false;
     }
   }
@@ -446,7 +448,7 @@ class SafariCompatibleStorage {
       const storage = this._getStorage();
       return storage.getItem(key);
     } catch (e) {
-      console.error('Error leyendo datos:', e);
+      console.error("Error leyendo datos:", e);
       return null;
     }
   }
@@ -457,7 +459,7 @@ class SafariCompatibleStorage {
       storage.removeItem(key);
       return true;
     } catch (e) {
-      console.error('Error eliminando datos:', e);
+      console.error("Error eliminando datos:", e);
       return false;
     }
   }
@@ -472,7 +474,7 @@ const safariStorage = new SafariCompatibleStorage();
 export const AUTO_SAVE_CONFIG = {
   INTERVAL_MS: 30000, // 30 segundos
   MAX_AGE_HOURS: 24, // 24 horas
-  STORAGE_KEY: 'registro_visitas_backup'
+  STORAGE_KEY: "registro_visitas_backup",
 };
 
 /**
@@ -484,22 +486,24 @@ export const saveFormToLocalStorage = (formData) => {
     const timestamp = new Date().toISOString();
     const savedData = {
       ...formData,
-      savedAt: timestamp
+      savedAt: timestamp,
     };
     const success = safariStorage.setItem(
-      AUTO_SAVE_CONFIG.STORAGE_KEY, 
-      JSON.stringify(savedData)
+      AUTO_SAVE_CONFIG.STORAGE_KEY,
+      JSON.stringify(savedData),
     );
-    
+
     if (success) {
-      console.log('Formulario guardado automáticamente');
-    } else {
-      console.warn('No se pudieron guardar los datos');
+      console.log("💾 Formulario guardado en localStorage:", {
+        sucursal1: savedData.sucursal1,
+        sucursal2: savedData.sucursal2,
+        timestamp,
+      });
     }
-    
+
     return success;
   } catch (error) {
-    console.error('Error guardando en storage:', error);
+    console.error("Error guardando en storage:", error);
     return false;
   }
 };
@@ -516,7 +520,7 @@ export const loadFormFromLocalStorage = () => {
       return data;
     }
   } catch (error) {
-    console.warn('No se pudo recuperar respaldo desde storage:', error);
+    console.warn("No se pudo recuperar respaldo desde storage:", error);
   }
   return null;
 };
@@ -527,10 +531,10 @@ export const loadFormFromLocalStorage = () => {
 export const clearLocalStorageBackup = () => {
   try {
     safariStorage.removeItem(AUTO_SAVE_CONFIG.STORAGE_KEY);
-    console.log('Respaldo eliminado correctamente');
+    console.log("Respaldo eliminado correctamente");
     return true;
   } catch (error) {
-    console.warn('No se pudo limpiar respaldo de storage:', error);
+    console.warn("No se pudo limpiar respaldo de storage:", error);
     return false;
   }
 };
@@ -542,7 +546,7 @@ export const clearLocalStorageBackup = () => {
  */
 export const hasSignificantData = (formData) => {
   if (!formData) return false;
-  
+
   return (
     formData.empresa ||
     formData.area ||
@@ -556,12 +560,14 @@ export const hasSignificantData = (formData) => {
     formData.sucursal2?.ingreso ||
     formData.sucursal2?.egreso ||
     formData.sucursal2?.firma ||
-    formData.actividades?.some(act => 
-      act.descripcion || act.finalizada
-    ) ||
+    formData.actividades?.some((act) => act.descripcion || act.finalizada) ||
     formData.documentacion?.firma ||
-    formData.documentacion?.entregados?.some(doc => doc.nombre || doc.firmaRecibio) ||
-    formData.documentacion?.recibidos?.some(doc => doc.nombre || doc.firmaRecibio) ||
+    formData.documentacion?.entregados?.some(
+      (doc) => doc.nombre || doc.firmaRecibio,
+    ) ||
+    formData.documentacion?.recibidos?.some(
+      (doc) => doc.nombre || doc.firmaRecibio,
+    ) ||
     formData.horarioLlegada
   );
 };
@@ -584,12 +590,12 @@ export const getHoursSinceSaved = (savedAt) => {
  */
 export const formatDateTime = (timestamp) => {
   const date = new Date(timestamp);
-  return date.toLocaleString('es-AR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
+  return date.toLocaleString("es-AR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
@@ -601,20 +607,20 @@ export const formatDateTime = (timestamp) => {
 export const handleDataRecovery = (setFormData) => {
   try {
     const savedData = loadFormFromLocalStorage();
-    
+
     if (savedData && savedData.savedAt && hasSignificantData(savedData)) {
       const hoursDiff = getHoursSinceSaved(savedData.savedAt);
-      
+
       if (hoursDiff < AUTO_SAVE_CONFIG.MAX_AGE_HOURS) {
         const formattedTime = formatDateTime(savedData.savedAt);
         const restore = window.confirm(
-          `Se encontró un formulario guardado automáticamente el ${formattedTime}. ¿Quieres recuperarlo?`
+          `Se encontró un formulario guardado automáticamente el ${formattedTime}. ¿Quieres recuperarlo?`,
         );
-        
+
         if (restore) {
           const { savedAt, ...dataToRestore } = savedData;
           setFormData(dataToRestore);
-          console.log('Datos recuperados correctamente');
+          console.log("Datos recuperados correctamente");
           return true;
         } else {
           clearLocalStorageBackup();
@@ -625,9 +631,9 @@ export const handleDataRecovery = (setFormData) => {
       }
     }
   } catch (error) {
-    console.error('Error en recuperación de datos:', error);
+    console.error("Error en recuperación de datos:", error);
   }
-  
+
   return false;
 };
 
@@ -679,43 +685,68 @@ export const validateFormData = (formData) => {
   if (!formData.area) errors.area = "Área es requerida";
   if (!formData.sucursal) errors.sucursal = "Sucursal es requerida";
   if (!formData.provincia) errors.provincia = "Provincia es requerida";
-  if (!formData.horarioSaludo) errors.horarioSaludo = "Horario de salida es requerido";
-  if (!formData.horarioLlegada) errors.horarioLlegada = "Horario de llegada es requerido";
+  if (!formData.horarioSaludo)
+    errors.horarioSaludo = "Horario de salida es requerido";
+  if (!formData.horarioLlegada)
+    errors.horarioLlegada = "Horario de llegada es requerido";
 
   // Validar visitante
   const hasVisitante = formData.visitante && formData.visitante.trim();
   if (!hasVisitante) errors.visitante = "Nombre del visitante es requerido";
 
   // Validar sucursales - al menos una debe estar completa
-  const sucursal1Completa = formData.sucursal1.ingreso && formData.sucursal1.egreso && formData.sucursal1.firma;
-  const sucursal2Completa = formData.sucursal2.ingreso && formData.sucursal2.egreso && formData.sucursal2.firma;
-  
+  const sucursal1Completa =
+    formData.sucursal1.ingreso &&
+    formData.sucursal1.egreso &&
+    formData.sucursal1.firma;
+  const sucursal2Completa =
+    formData.sucursal2.ingreso &&
+    formData.sucursal2.egreso &&
+    formData.sucursal2.firma;
+
   if (!sucursal1Completa && !sucursal2Completa) {
-    errors.sucursales = "Al menos una sucursal debe estar completa con horarios y firma";
+    errors.sucursales =
+      "Al menos una sucursal debe estar completa con horarios y firma";
   }
 
   // Validar campos individuales de sucursal 1 si tiene algún dato
-  if (formData.sucursal1.ingreso || formData.sucursal1.egreso || formData.sucursal1.firma) {
-    if (!formData.sucursal1.ingreso) errors.sucursal1Ingreso = "Horario de ingreso requerido";
-    if (!formData.sucursal1.egreso) errors.sucursal1Egreso = "Horario de egreso requerido";
-    if (!formData.sucursal1.firma) errors.sucursal1Firma = "Firma del responsable requerida";
+  if (
+    formData.sucursal1.ingreso ||
+    formData.sucursal1.egreso ||
+    formData.sucursal1.firma
+  ) {
+    if (!formData.sucursal1.ingreso)
+      errors.sucursal1Ingreso = "Horario de ingreso requerido";
+    if (!formData.sucursal1.egreso)
+      errors.sucursal1Egreso = "Horario de egreso requerido";
+    if (!formData.sucursal1.firma)
+      errors.sucursal1Firma = "Firma del responsable requerida";
   }
 
   // Validar campos individuales de sucursal 2 si tiene algún dato
-  if (formData.sucursal2.ingreso || formData.sucursal2.egreso || formData.sucursal2.firma) {
-    if (!formData.sucursal2.ingreso) errors.sucursal2Ingreso = "Horario de ingreso requerido";
-    if (!formData.sucursal2.egreso) errors.sucursal2Egreso = "Horario de egreso requerido";
-    if (!formData.sucursal2.firma) errors.sucursal2Firma = "Firma del responsable requerida";
+  if (
+    formData.sucursal2.ingreso ||
+    formData.sucursal2.egreso ||
+    formData.sucursal2.firma
+  ) {
+    if (!formData.sucursal2.ingreso)
+      errors.sucursal2Ingreso = "Horario de ingreso requerido";
+    if (!formData.sucursal2.egreso)
+      errors.sucursal2Egreso = "Horario de egreso requerido";
+    if (!formData.sucursal2.firma)
+      errors.sucursal2Firma = "Firma del responsable requerida";
   }
 
   // Validar actividades simplificadas - solo descripción y finalizada
   formData.actividades.forEach((actividad, index) => {
-    const hasDescription = actividad.descripcion && actividad.descripcion.trim();
+    const hasDescription =
+      actividad.descripcion && actividad.descripcion.trim();
     const hasStatus = actividad.finalizada && actividad.finalizada.trim();
-    
+
     // Si tiene descripción, debe tener estado de finalización y viceversa
     if (hasDescription && !hasStatus) {
-      errors[`actividad${index}Finalizada`] = "Debe indicar si la actividad está finalizada";
+      errors[`actividad${index}Finalizada`] =
+        "Debe indicar si la actividad está finalizada";
     }
     if (hasStatus && !hasDescription) {
       errors[`actividad${index}Descripcion`] = "Debe describir la actividad";
@@ -723,17 +754,22 @@ export const validateFormData = (formData) => {
   });
 
   // Validar documentación - si hay documentos, debe haber firma del responsable
-  const tieneDocumentos = 
-    formData.documentacion.entregados.some(doc => doc.nombre && doc.nombre.trim()) ||
-    formData.documentacion.recibidos.some(doc => doc.nombre && doc.nombre.trim());
-    
+  const tieneDocumentos =
+    formData.documentacion.entregados.some(
+      (doc) => doc.nombre && doc.nombre.trim(),
+    ) ||
+    formData.documentacion.recibidos.some(
+      (doc) => doc.nombre && doc.nombre.trim(),
+    );
+
   if (tieneDocumentos && !formData.documentacion.firma) {
-    errors.documentacionFirma = "Firma del responsable de documentación requerida";
+    errors.documentacionFirma =
+      "Firma del responsable de documentación requerida";
   }
 
   return {
     isValid: Object.keys(errors).length === 0,
-    errors
+    errors,
   };
 };
 
@@ -747,14 +783,21 @@ export const getFormStats = (formData) => {
     fieldsCompleted: 0,
     totalFields: 7,
     visitanteCompleto: !!(formData.visitante && formData.visitante.trim()),
-    actividadesCount: formData.actividades.filter(act => 
-      (act.descripcion && act.descripcion.trim()) && 
-      (act.finalizada && act.finalizada.trim())
+    actividadesCount: formData.actividades.filter(
+      (act) =>
+        act.descripcion &&
+        act.descripcion.trim() &&
+        act.finalizada &&
+        act.finalizada.trim(),
     ).length,
-    documentosEntregados: formData.documentacion.entregados.filter(doc => doc.nombre && doc.nombre.trim()).length,
-    documentosRecibidos: formData.documentacion.recibidos.filter(doc => doc.nombre && doc.nombre.trim()).length,
+    documentosEntregados: formData.documentacion.entregados.filter(
+      (doc) => doc.nombre && doc.nombre.trim(),
+    ).length,
+    documentosRecibidos: formData.documentacion.recibidos.filter(
+      (doc) => doc.nombre && doc.nombre.trim(),
+    ).length,
     sucursalesCompletas: 0,
-    storageType: safariStorage.storageType // Información del tipo de storage usado
+    storageType: safariStorage.storageType, // Información del tipo de storage usado
   };
 
   // Contar campos básicos completados
@@ -767,21 +810,33 @@ export const getFormStats = (formData) => {
   if (stats.visitanteCompleto) stats.fieldsCompleted++;
 
   // Contar sucursales completas
-  if (formData.sucursal1.ingreso && formData.sucursal1.egreso && formData.sucursal1.firma) {
+  if (
+    formData.sucursal1.ingreso &&
+    formData.sucursal1.egreso &&
+    formData.sucursal1.firma
+  ) {
     stats.sucursalesCompletas++;
   }
-  if (formData.sucursal2.ingreso && formData.sucursal2.egreso && formData.sucursal2.firma) {
+  if (
+    formData.sucursal2.ingreso &&
+    formData.sucursal2.egreso &&
+    formData.sucursal2.firma
+  ) {
     stats.sucursalesCompletas++;
   }
 
-  stats.completionPercentage = Math.round((stats.fieldsCompleted / stats.totalFields) * 100);
-  stats.hasSignatures = !!(formData.documentacion.firma || 
-                          formData.sucursal1.firma || 
-                          formData.sucursal2.firma);
+  stats.completionPercentage = Math.round(
+    (stats.fieldsCompleted / stats.totalFields) * 100,
+  );
+  stats.hasSignatures = !!(
+    formData.documentacion.firma ||
+    formData.sucursal1.firma ||
+    formData.sucursal2.firma
+  );
 
   stats.actividadesTotal = formData.actividades.length;
-  stats.actividadesConDatos = formData.actividades.filter(act => 
-    act.descripcion || act.finalizada
+  stats.actividadesConDatos = formData.actividades.filter(
+    (act) => act.descripcion || act.finalizada,
   ).length;
 
   return stats;

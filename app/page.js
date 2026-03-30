@@ -27,6 +27,34 @@ export default function Home() {
   const [errors, setErrors] = useState({});
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isFormSaved, setIsFormSaved] = useState(false);
+  const [showToast, setShowToast] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
+  const [lastSaveTime, setLastSaveTime] = useState(null);
+
+  // Función para mostrar notificaciones
+  const showNotification = (message, type = "success") => {
+    setShowToast({ show: true, message, type });
+    setTimeout(() => {
+      setShowToast({ show: false, message: "", type: "" });
+    }, 3000);
+  };
+
+  // Función para guardar manualmente
+  const handleManualSave = () => {
+    try {
+      saveFormToLocalStorage(formData);
+      setLastSaveTime(new Date());
+      setIsFormSaved(false);
+      setHasUnsavedChanges(true);
+      showNotification("✅ Datos guardados correctamente", "success");
+    } catch (error) {
+      console.error("Error al guardar manualmente:", error);
+      showNotification("❌ Error al guardar los datos", "error");
+    }
+  };
 
   // useEffect para detectar cambios en el formulario
   useEffect(() => {
@@ -48,7 +76,7 @@ export default function Home() {
     const handlePopState = (e) => {
       if (hasUnsavedChanges && !isFormSaved) {
         const confirmLeave = window.confirm(
-          "¿Estás seguro de que quieres salir? Se perderán todos los datos no guardados."
+          "¿Estás seguro de que quieres salir? Se perderán todos los datos no guardados.",
         );
         if (!confirmLeave) {
           window.history.pushState(null, "", window.location.href);
@@ -74,6 +102,7 @@ export default function Home() {
     if (hasUnsavedChanges) {
       const interval = setInterval(() => {
         saveFormToLocalStorage(formData);
+        setLastSaveTime(new Date());
       }, AUTO_SAVE_CONFIG.INTERVAL_MS);
 
       return () => clearInterval(interval);
@@ -82,7 +111,11 @@ export default function Home() {
 
   // useEffect para recuperar datos al cargar la página
   useEffect(() => {
-    handleDataRecovery(setFormData);
+    const restored = handleDataRecovery(setFormData);
+    if (restored) {
+      setIsFormSaved(false);
+      setHasUnsavedChanges(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -101,7 +134,7 @@ export default function Home() {
     if (!validation.isValid) {
       const firstErrorKey = Object.keys(validation.errors)[0];
       const firstErrorElement = document.querySelector(
-        `[data-error="${firstErrorKey}"]`
+        `[data-error="${firstErrorKey}"]`,
       );
       if (firstErrorElement) {
         firstErrorElement.scrollIntoView({
@@ -266,7 +299,7 @@ export default function Home() {
   const handleClearForm = () => {
     if (
       window.confirm(
-        "¿Estás seguro de que quieres limpiar el formulario? Se perderán todos los datos."
+        "¿Estás seguro de que quieres limpiar el formulario? Se perderán todos los datos.",
       )
     ) {
       setFormData(getDefaultFormData());
@@ -303,6 +336,14 @@ export default function Home() {
         <div className="fixed top-0 left-0 right-0 bg-yellow-100 border-b border-yellow-400 text-yellow-800 px-4 py-2 text-sm text-center z-50">
           ⚠️ Tienes cambios sin guardar. Guarda el PDF antes de cerrar la
           página.
+        </div>
+      )}
+
+      {/* Indicador de último guardado */}
+      {lastSaveTime && (
+        <div className="fixed top-12 right-4 bg-gray-800 text-white px-3 py-1 rounded-full text-xs z-50">
+          💾 Último guardado:{" "}
+          {new Date(lastSaveTime).toLocaleTimeString("es-AR")}
         </div>
       )}
 
@@ -439,7 +480,7 @@ export default function Home() {
           </div>
 
           <div className="space-y-2" data-error="horarioSaludo">
-            <label className="block text-sm font-medium text-gray-700" >
+            <label className="block text-sm font-medium text-gray-700">
               HORARIO DE SALIDA DE ADMINISTRACIÓN: *
             </label>
             <input
@@ -717,7 +758,7 @@ export default function Home() {
                           handleActividadChange(
                             index,
                             "descripcion",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         placeholder="Describa la actividad realizada"
@@ -739,7 +780,7 @@ export default function Home() {
                           handleActividadChange(
                             index,
                             "finalizada",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
@@ -778,7 +819,11 @@ export default function Home() {
                     type="text"
                     value={actividad.descripcion}
                     onChange={(e) =>
-                      handleActividadChange(index, "descripcion", e.target.value)
+                      handleActividadChange(
+                        index,
+                        "descripcion",
+                        e.target.value,
+                      )
                     }
                     placeholder="Describa la actividad realizada"
                     className="w-full p-2 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
@@ -888,7 +933,7 @@ export default function Home() {
                           "entregados",
                           index,
                           "nombre",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       className="w-full p-1 border text-gray-700 border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
@@ -956,7 +1001,7 @@ export default function Home() {
                           "recibidos",
                           index,
                           "nombre",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       className="w-full p-1 border border-gray-300 rounded focus:ring-blue-500 focus:border-blue-500"
@@ -1023,6 +1068,72 @@ export default function Home() {
             onFormSaved={handleFormSaved}
           />
         </div>
+
+        {/* BOTÓN STICKY - Guardado manual con diseño glassmorphism */}
+        <button
+          onClick={handleManualSave}
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            zIndex: 1000,
+            padding: "12px 18px",
+            background: "rgba(6, 105, 179, 0.85)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            color: "white",
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            borderRadius: "50px",
+            fontFamily: "Poppins, sans-serif",
+            fontWeight: "600",
+            fontSize: "14px",
+            cursor: "pointer",
+            boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
+            transition: "all 0.3s ease",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "rgba(54, 138, 202, 0.9)";
+            e.currentTarget.style.transform = "translateY(-2px)";
+            e.currentTarget.style.boxShadow = "0 6px 20px rgba(0, 0, 0, 0.25)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "rgba(6, 105, 179, 0.85)";
+            e.currentTarget.style.transform = "translateY(0)";
+            e.currentTarget.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.2)";
+          }}
+          title="Guardar borrador manualmente"
+        >
+          <span style={{ fontSize: "18px" }}>💾</span>
+          {/* Texto visible solo en desktop */}
+          <span className="hidden sm:inline">Guardar</span>
+        </button>
+
+        {/* Toast notification */}
+        {showToast.show && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "90px",
+              right: "20px",
+              backgroundColor:
+                showToast.type === "success" ? "#4caf50" : "#f44336",
+              color: "white",
+              padding: "12px 20px",
+              borderRadius: "8px",
+              fontFamily: "Poppins, sans-serif",
+              fontSize: "14px",
+              fontWeight: "500",
+              zIndex: 1001,
+              animation: "slideIn 0.3s ease",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+            }}
+          >
+            {showToast.message}
+          </div>
+        )}
 
         {showSignaturePad.show && (
           <SignaturePad

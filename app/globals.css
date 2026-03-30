@@ -1,17 +1,21 @@
-@import "tailwindcss";
+/* Importar fuentes desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Muli:wght@400;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Variables de colores */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --manzur-primary: #0669b3;
+  --manzur-secondary: #368aca;
+  --manzur-black: #000000;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* Modo oscuro */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -19,11 +23,354 @@
   }
 }
 
+/* Estilos base */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Poppins', 'Arial', sans-serif;
+  padding: 20px;
+  line-height: 1.5;
 }
+
+/* Tipografía personalizada */
+h1 {
+  font-family: 'Muli', 'Poppins', sans-serif;
+  font-weight: 800;
+  color: var(--manzur-primary);
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  color: var(--manzur-secondary);
+  border-bottom: 2px solid var(--manzur-secondary);
+  padding-bottom: 8px;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 500;
+  color: var(--manzur-primary);
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+label {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  color: var(--manzur-primary);
+  font-size: 0.875rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="date"],
+select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 0.375rem;
+  font-family: 'Poppins', sans-serif;
+  transition: all 0.3s ease;
+  background-color: white;
+  color: #333;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+select:focus {
+  outline: none;
+  border-color: var(--manzur-secondary);
+  box-shadow: 0 0 0 2px rgba(54, 138, 202, 0.2);
+}
+
+input:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+}
+
+/* Contenedor */
+.container {
+  max-width: 100%;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+}
+
+/* Tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: var(--manzur-primary);
+}
+
+/* Time Button */
+.time-button-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.time-button-container span {
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.time-button-container button {
+  padding: 0.25rem 0.75rem;
+  background-color: var(--manzur-primary);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.time-button-container button:hover {
+  background-color: var(--manzur-secondary);
+}
+
+/* Botón Sticky */
+.sticky-save-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--manzur-primary) 0%, var(--manzur-secondary) 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(6, 105, 179, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sticky-save-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(6, 105, 179, 0.4);
+  background: linear-gradient(135deg, var(--manzur-secondary) 0%, var(--manzur-primary) 100%);
+}
+
+/* Toast */
+.toast-notification {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  background-color: var(--manzur-primary);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1001;
+  animation: slideIn 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toast-notification.success {
+  background-color: #4caf50;
+}
+
+.toast-notification.error {
+  background-color: #f44336;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Signature Pad */
+.signature-pad-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.signature-pad-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 400px;
+}
+
+.signature-pad-container canvas {
+  border: 1px solid #ddd;
+  width: 100%;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  touch-action: none;
+}
+
+.signature-pad-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 8px;
+}
+
+.signature-pad-buttons button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+}
+
+.signature-pad-buttons button:first-child {
+  background-color: #f44336;
+  color: white;
+}
+
+.signature-pad-buttons button:nth-child(2) {
+  background-color: #9e9e9e;
+  color: white;
+}
+
+.signature-pad-buttons button:last-child {
+  background-color: var(--manzur-primary);
+  color: white;
+}
+
+.signature-pad-buttons button:last-child:hover {
+  background-color: var(--manzur-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+  
+  .sticky-save-button {
+    bottom: 15px;
+    right: 15px;
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+  
+  .toast-notification {
+    bottom: 80px;
+    right: 15px;
+    left: 15px;
+    text-align: center;
+  }
+  
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+  
+  thead {
+    display: none;
+  }
+  
+  tr {
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0.75rem;
+    background: white;
+  }
+  
+  td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  td:last-child {
+    border-bottom: none;
+  }
+  
+  td:before {
+    content: attr(data-label);
+    font-weight: bold;
+    width: 45%;
+    font-size: 0.75rem;
+    color: var(--manzur-primary);
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 10px;
+  }
+  
+  input, select, button {
+    font-size: 16px !important;
+  }
+  
+  button, [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .signature-pad-container canvas {
+    height: 180px;
+  }
+  
+  .signature-pad-buttons {
+    flex-wrap: wrap;
+  }
+  
+  .signature-pad-buttons button {
+    flex: 1;
+    min-width: 80px;
+  }
+}
+
+/* Estilos de impresión */
 @media print {
   body * {
     visibility: hidden;
@@ -41,38 +388,31 @@ body {
     color: black;
   }
   
-  /* Asegura que Tailwind CSS se imprima correctamente */
   @page {
     size: A4;
     margin: 10mm;
   }
   
-  /* Fuerza los colores de fondo para imprimir */
+  button, .sticky-save-button {
+    display: none !important;
+  }
+  
   .bg-white {
     background-color: white !important;
   }
   
-  /* Estilos específicos para tablas */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
+  img {
+    filter: grayscale(100%);
   }
 }
-@media (max-width: 768px) {
-  .text-center-mobile {
-    text-align: center !important;
-  }
-  
-  .justify-center-mobile {
-    justify-content: center !important;
-  }
-  
-  .mx-auto-mobile {
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
+/* DEBUG: Botón sticky de prueba */
+.test-sticky-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: red;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
 }

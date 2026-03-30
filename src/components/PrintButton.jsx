@@ -6,29 +6,41 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors, onF
   const componentRef = useRef();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Función para enviar datos a Google Sheets
+  // Función para enviar datos a Excel vía Cloudflare Worker → Power Automate
   const sendDataToGoogleSheets = async (data) => {
     try {
-      // URL de tu Google Apps Script Web App
-      const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxf22vPMjkSb5_Kw1F5GnlABuNdM9G94TYbCr5RJlx02fxm4rsBaycryYJqyrqhurFaLw/exec';
+      // URL del Cloudflare Worker (maneja CORS, no necesitamos no-cors)
+      const WORKER_URL = 'https://registro-visitas-proxy.lcampos.workers.dev/';
 
-      const response = await fetch(WEB_APP_URL, {
+      const response = await fetch(WORKER_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-        mode: 'no-cors' // Necesario para Google Apps Script
       });
 
-      // Nota: Con mode: 'no-cors' no podemos leer la respuesta,
-      // pero los datos se enviarán correctamente
-      console.log('Datos enviados a Google Sheets');
+      console.log('Datos enviados a Excel, status:', response.status);
       return true;
     } catch (error) {
-      console.error('Error al enviar datos a Google Sheets:', error);
+      console.error('Error al enviar datos a Excel:', error);
       return false;
     }
+  };
+
+  // Convierte "HH:MM" a número decimal de Excel (fracción del día)
+  // Devuelve 0 si no hay valor (Power Automate requiere number, no acepta null ni "")
+  const timeToExcel = (timeStr) => {
+    if (!timeStr) return 0;
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return 0;
+    return (hours * 60 + minutes) / 1440;
+  };
+
+  // Convierte "YYYY-MM-DD" a "dd/MM/YYYY"
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    if (!year || !month || !day) return dateStr;
+    return `${day}/${month}/${year}`;
   };
 
   // Función para preparar los datos para Google Sheets
@@ -36,32 +48,33 @@ const PrintButton = ({ formData, onClearForm, onNewForm, onValidate, errors, onF
     const currentTimestamp = new Date().toISOString().split("T")[0];
 
     return {
-      timestamp: currentTimestamp,
-      empresa: formData.empresa || '',
-      fechaVisita: formData.fechaVisita || '',
-      area: formData.area || '',
-      sucursal: formData.sucursal || '',
-      provincia: formData.provincia || '',
-      // IMPORTANTE: Asegurar que estos campos se envían correctamente
-      horarioSaludo: formData.horarioSaludo || '', // Horario de salida (G)
-      visitante: formData.visitante || '',
-      // Datos de sucursales
-      sucursal1Ingreso: formData.sucursal1?.ingreso || '',
-      sucursal1Egreso: formData.sucursal1?.egreso || '',
-      sucursal2Ingreso: formData.sucursal2?.ingreso || '',
-      sucursal2Egreso: formData.sucursal2?.egreso || '',
-      // Actividades simplificadas (solo descripción y finalizada)
-      actividades: formData.actividades ? JSON.stringify(formData.actividades.filter(act =>
-        act.descripcion || act.finalizada
-      )) : '',
-      // Documentos entregados y recibidos (solo nombres, sin firmas)
-      documentosEntregados: formData.documentacion?.entregados ?
-        formData.documentacion.entregados.filter(doc => doc.nombre).map(doc => doc.nombre).join(', ') : '',
-      documentosRecibidos: formData.documentacion?.recibidos ?
-        formData.documentacion.recibidos.filter(doc => doc.nombre).map(doc => doc.nombre).join(', ') : '',
-      // IMPORTANTE: Asegurar que este campo se envía correctamente
-      horarioLlegada: formData.horarioLlegada || '', // Horario de llegada (P)
-      totalVisita: formData.horarioVisita || '' // Este campo puede ser calculado o no
+      timestamp:             timeToExcel(new Date().toTimeString().slice(0,5)),
+      empresa:               formData.empresa || '',
+      fechaVisita:           formatDate(formData.fechaVisita),
+      area:                  formData.area || '',
+      sucursal:              formData.sucursal || '',
+      provincia:             formData.provincia || '',
+      horarioSaludo:         timeToExcel(formData.horarioSaludo),
+      visitante:             formData.visitante || '',
+      sucursal1Ingreso:      timeToExcel(formData.sucursal1?.ingreso),
+      sucursal1Egreso:       timeToExcel(formData.sucursal1?.egreso),
+      sucursal2Ingreso:      timeToExcel(formData.sucursal2?.ingreso),
+      sucursal2Egreso:       timeToExcel(formData.sucursal2?.egreso),
+      actividades:           formData.actividades
+                               ? formData.actividades
+                                   .filter(act => act.descripcion || act.finalizada)
+                                   .map((act, i) => {
+                                     const fin = act.finalizada ? ` (Finalizada: ${act.finalizada})` : '';
+                                     return `${i + 1}. ${act.descripcion}${fin}`;
+                                   })
+                                   .join(' | ')
+                               : '',
+      documentosEntregados:  formData.documentacion?.entregados ?
+                               formData.documentacion.entregados.filter(doc => doc.nombre).map(doc => doc.nombre).join(', ') : '',
+      documentosRecibidos:   formData.documentacion?.recibidos ?
+                               formData.documentacion.recibidos.filter(doc => doc.nombre).map(doc => doc.nombre).join(', ') : '',
+      horarioLlegada:        timeToExcel(formData.horarioLlegada),
+      totalVisita:           (() => { const sal = timeToExcel(formData.horarioSaludo); const lle = timeToExcel(formData.horarioLlegada); if (!sal || !lle || lle <= sal) return 0; return lle - sal; })(),
     };
   };
 
