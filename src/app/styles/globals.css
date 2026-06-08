@@ -1,0 +1,798 @@
+/* ============================================
+   FUENTES Y VARIABLES
+   ============================================ */
+@import url("https://fonts.googleapis.com/css2?family=Muli:wght@400;700;800;900&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Colores principales */
+  --background: #ffffff;
+  --foreground: #171717;
+  --manzur-primary: #0669b3;
+  --manzur-primary-dark: #05538f;
+  --manzur-primary-light: #368aca;
+  --manzur-black: #000000;
+  --manzur-gray: #f3f4f6;
+  --manzur-gray-dark: #9ca3af;
+
+  /* Estados */
+  --success: #4caf50;
+  --error: #f44336;
+  --warning: #ff9800;
+  --info: #2196f3;
+
+  /* Sombras */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+  /* Espaciado */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Bordes */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* ============================================
+   ESTILOS BASE
+   ============================================ */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Poppins", "Arial", sans-serif;
+  padding: var(--spacing-xl);
+  line-height: 1.5;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* ============================================
+   TIPOGRAFÍA
+   ============================================ */
+h1 {
+  font-family: "Muli", "Poppins", sans-serif;
+  font-weight: 800;
+  color: var(--manzur-primary);
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
+  margin-bottom: var(--spacing-md);
+}
+
+h2 {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  color: var(--manzur-primary-light);
+  border-bottom: 2px solid var(--manzur-primary-light);
+  padding-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  color: var(--manzur-primary);
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+label {
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  color: var(--manzur-primary);
+  font-size: 0.875rem;
+  display: block;
+  margin-bottom: var(--spacing-sm);
+}
+
+/* ============================================
+   FORMULARIOS E INPUTS
+   ============================================ */
+input[type="text"],
+input[type="date"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: var(--radius-md);
+  font-family: "Poppins", sans-serif;
+  transition: all 0.3s ease;
+  background-color: white;
+  color: #333;
+  font-size: 0.875rem;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--manzur-primary-light);
+  box-shadow: 0 0 0 2px rgba(54, 138, 202, 0.2);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  background-color: var(--manzur-gray);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Inputs con error */
+input.error,
+select.error,
+textarea.error {
+  border-color: var(--error);
+}
+
+input.error:focus,
+select.error:focus,
+textarea.error:focus {
+  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+}
+
+/* ============================================
+   CONTENEDORES Y LAYOUT
+   ============================================ */
+.container {
+  max-width: 100%;
+  background-color: white;
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  margin: 0 auto;
+}
+
+/* Tarjetas */
+.card {
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Grids */
+.grid-responsive {
+  display: grid;
+  gap: var(--spacing-md);
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* ============================================
+   TABLAS
+   ============================================ */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-md);
+}
+
+th,
+td {
+  border: 1px solid #ddd;
+  padding: var(--spacing-sm);
+  text-align: left;
+}
+
+th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: var(--manzur-primary);
+}
+
+/* Tabla responsive */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   BOTONES
+   ============================================ */
+button {
+  font-family: "Poppins", sans-serif;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background-color: var(--manzur-primary);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: var(--manzur-primary-dark);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background-color: var(--manzur-gray);
+  color: var(--manzur-primary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-danger {
+  background-color: var(--error);
+  color: white;
+}
+
+/* Time Button */
+.time-button-container {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.time-button-container span {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  min-width: 60px;
+}
+
+.time-button-container button {
+  padding: 0.25rem 0.75rem;
+  background-color: var(--manzur-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.time-button-container button:hover {
+  background-color: var(--manzur-primary-light);
+}
+
+.time-button-container button:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+   BOTÓN STICKY (Guardado)
+   ============================================ */
+.sticky-save-button {
+  position: fixed;
+  bottom: var(--spacing-xl);
+  right: var(--spacing-xl);
+  z-index: 1000;
+  padding: 12px 24px;
+  background: linear-gradient(
+    135deg,
+    var(--manzur-primary) 0%,
+    var(--manzur-primary-light) 100%
+  );
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sticky-save-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+  background: linear-gradient(
+    135deg,
+    var(--manzur-primary-light) 0%,
+    var(--manzur-primary) 100%
+  );
+}
+
+.sticky-save-button:active {
+  transform: translateY(0);
+}
+
+.sticky-save-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================
+   NOTIFICACIONES (Toast)
+   ============================================ */
+.toast-notification {
+  position: fixed;
+  bottom: 90px;
+  right: var(--spacing-xl);
+  background-color: var(--manzur-primary);
+  color: white;
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  font-family: "Poppins", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 1001;
+  animation: slideIn 0.3s ease;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast-notification.success {
+  background-color: var(--success);
+}
+
+.toast-notification.error {
+  background-color: var(--error);
+}
+
+.toast-notification.warning {
+  background-color: var(--warning);
+}
+
+.toast-notification.info {
+  background-color: var(--info);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.toast-notification.exit {
+  animation: slideOut 0.3s ease forwards;
+}
+
+/* ============================================
+   FIRMAS (Signature Pad)
+   ============================================ */
+.signature-pad-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.signature-pad-container {
+  background-color: white;
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 500px;
+  box-shadow: var(--shadow-xl);
+}
+
+.signature-pad-container canvas {
+  border: 1px solid #ddd;
+  width: 100%;
+  background-color: #f9f9f9;
+  border-radius: var(--radius-md);
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.signature-pad-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-md);
+  gap: 8px;
+}
+
+.signature-pad-buttons button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.signature-pad-buttons button:first-child {
+  background-color: var(--error);
+  color: white;
+}
+
+.signature-pad-buttons button:first-child:hover {
+  background-color: #d32f2f;
+}
+
+.signature-pad-buttons button:nth-child(2) {
+  background-color: #9e9e9e;
+  color: white;
+}
+
+.signature-pad-buttons button:nth-child(2):hover {
+  background-color: #757575;
+}
+
+.signature-pad-buttons button:last-child {
+  background-color: var(--manzur-primary);
+  color: white;
+}
+
+.signature-pad-buttons button:last-child:hover {
+  background-color: var(--manzur-primary-light);
+}
+
+/* ============================================
+   ANIMACIONES Y UTILIDADES
+   ============================================ */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Badge de estado */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.success {
+  background-color: #e8f5e9;
+  color: var(--success);
+}
+
+.status-badge.error {
+  background-color: #ffebee;
+  color: var(--error);
+}
+
+.status-badge.warning {
+  background-color: #fff3e0;
+  color: var(--warning);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 768px) {
+  body {
+    padding: var(--spacing-md);
+  }
+
+  .container {
+    padding: var(--spacing-md);
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  .sticky-save-button {
+    bottom: var(--spacing-md);
+    right: var(--spacing-md);
+    padding: 10px 20px;
+    font-size: 12px;
+  }
+
+  .toast-notification {
+    bottom: 80px;
+    right: var(--spacing-md);
+    left: var(--spacing-md);
+    text-align: center;
+  }
+
+  /* Tablas responsive */
+  table,
+  thead,
+  tbody,
+  th,
+  td,
+  tr {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    margin-bottom: var(--spacing-md);
+    border: 1px solid #ddd;
+    border-radius: var(--radius-lg);
+    padding: 0.75rem;
+    background: white;
+  }
+
+  td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  td:last-child {
+    border-bottom: none;
+  }
+
+  td:before {
+    content: attr(data-label);
+    font-weight: bold;
+    width: 45%;
+    font-size: 0.75rem;
+    color: var(--manzur-primary);
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 10px;
+  }
+
+  /* Mejora touch targets para móviles */
+  input,
+  select,
+  button,
+  [role="button"] {
+    font-size: 16px !important; /* Previene zoom automático en iOS */
+    min-height: 44px;
+  }
+
+  button,
+  .btn-primary,
+  .sticky-save-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .signature-pad-container {
+    width: 95%;
+    padding: var(--spacing-md);
+  }
+
+  .signature-pad-container canvas {
+    height: 180px;
+  }
+
+  .signature-pad-buttons {
+    flex-wrap: wrap;
+  }
+
+  .signature-pad-buttons button {
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .grid-responsive {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================
+   ESTILOS DE IMPRESIÓN
+   ============================================ */
+@media print {
+  /* Ocultar elementos no imprimibles */
+  body * {
+    visibility: hidden;
+  }
+
+  button,
+  .sticky-save-button,
+  .toast-notification,
+  .signature-pad-overlay,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Mostrar solo contenido imprimible */
+  .print-content,
+  .print-content * {
+    visibility: visible;
+  }
+
+  .print-content {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    background-color: white;
+    color: black;
+  }
+
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  /* Ajustes de impresión */
+  .bg-white,
+  .card,
+  .container {
+    background-color: white !important;
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+
+  img {
+    filter: grayscale(100%);
+  }
+
+  a {
+    text-decoration: none;
+    color: black;
+  }
+
+  /* Evitar saltos de página dentro de secciones importantes */
+  section,
+  .card,
+  .print-section {
+    page-break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}
+
+/* ============================================
+   UTILIDADES ADICIONALES
+   ============================================ */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.mt-1 {
+  margin-top: var(--spacing-xs);
+}
+.mt-2 {
+  margin-top: var(--spacing-sm);
+}
+.mt-3 {
+  margin-top: var(--spacing-md);
+}
+.mt-4 {
+  margin-top: var(--spacing-lg);
+}
+
+.mb-1 {
+  margin-bottom: var(--spacing-xs);
+}
+.mb-2 {
+  margin-bottom: var(--spacing-sm);
+}
+.mb-3 {
+  margin-bottom: var(--spacing-md);
+}
+.mb-4 {
+  margin-bottom: var(--spacing-lg);
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Debug (solo desarrollo) */
+.debug-border {
+  border: 1px solid red;
+}
+
+.debug-background {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
+/* ============================================
+   (DEBUG) Botón de prueba - Solo para desarrollo
+   ============================================ */
+.test-sticky-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: red;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+}
+
+/* Ocultar en producción */
+.production .test-sticky-button {
+  display: none;
+}

@@ -1,4 +1,0 @@
-#Mon Mar 30 17:04:19 ART 2026
-base.0=C\:\\Users\\lcampos\\Documents\\FrontEnd\\registro-visitas\\app\\build\\intermediates\\dex\\release\\minifyReleaseWithR8\\classes.dex
-renamed.0=classes.dex
-path.0=classes.dex

@@ -1,0 +1,52 @@
+/* src/app/styles/components.css */
+
+/* Componentes específicos del formulario de visitas */
+.parada-card {
+  @apply mb-4 p-4 border border-gray-200 rounded-lg bg-gray-50;
+  transition: all 0.2s ease;
+}
+
+.parada-card:hover {
+  @apply shadow-md;
+}
+
+.parada-header {
+  @apply flex justify-between items-center mb-3;
+}
+
+.timeline-bar {
+  @apply flex flex-wrap gap-1 items-center text-xs mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200;
+}
+
+.timeline-step {
+  @apply px-2 py-0.5 rounded font-medium;
+}
+
+.timeline-step-valid {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.timeline-step-invalid {
+  @apply bg-red-100 text-red-700;
+}
+
+.timeline-step-empty {
+  @apply bg-gray-100 text-gray-400;
+}
+
+/* Badges de estado */
+.save-status {
+  @apply text-xs font-medium;
+}
+
+.save-status-saved {
+  @apply text-green-600;
+}
+
+.save-status-saving {
+  @apply text-gray-500 animate-pulse;
+}
+
+.save-status-error {
+  @apply text-red-600;
+}
