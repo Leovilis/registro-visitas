@@ -1,15 +1,10 @@
-// src/app/components/forms/VisitForm.jsx
+// src/app/components/forms/VisitaForm.jsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { empresas, sucursalesPorEmpresa, provincias } from '@/app/utils/constants';
 import { TimeButton } from './TimeButton';
-import SignaturePad from '../ui/SignaturePad';  // ✅ Importación corregida
-import {
-    addTareaToVisita,
-    removeTareaFromVisita,
-    updateTareaInVisita
-} from '@/app/models/recorridoModel';
+import SignaturePad from '../ui/SignaturePad';
 
 export function VisitaForm({
     visita,
@@ -18,19 +13,34 @@ export function VisitaForm({
     onUpdate,
     onRemove
 }) {
-    const [selectedEmpresa, setSelectedEmpresa] = useState(visita.empresa || '');
-    const [mostrarFirma, setMostrarFirma] = useState(false);
     const [sucursalesDisponibles, setSucursalesDisponibles] = useState([]);
+    const [mostrarFirma, setMostrarFirma] = useState(false);
+
+    // ✅ Cuando cambia la empresa (desde props), actualizar sucursales disponibles
+    useEffect(() => {
+        if (visita.empresa) {
+            const sucursales = sucursalesPorEmpresa[visita.empresa] || [];
+            setSucursalesDisponibles(sucursales);
+        } else {
+            setSucursalesDisponibles([]);
+        }
+    }, [visita.empresa]);
 
     const handleEmpresaChange = (e) => {
         const empresa = e.target.value;
-        setSelectedEmpresa(empresa);
         onUpdate('empresa', empresa);
-        onUpdate('sucursal', '');
-        onUpdate('provincia', '');
+        onUpdate('sucursal', '');  // Limpiar sucursal al cambiar empresa
+        onUpdate('provincia', '');  // Limpiar provincia al cambiar empresa
 
-        const sucursales = sucursalesPorEmpresa[empresa] || [];
-        setSucursalesDisponibles(sucursales);
+        // Las sucursales se actualizarán automáticamente por el useEffect
+    };
+
+    const handleSucursalChange = (e) => {
+        const sucursal = e.target.value;
+        onUpdate('sucursal', sucursal);
+
+        // ✅ Opcional: auto-detectar provincia según la sucursal
+        // Puedes tener un mapa sucursal -> provincia si lo necesitas
     };
 
     const handleFirmaGuardada = (firmaDataUrl) => {
@@ -40,25 +50,25 @@ export function VisitaForm({
 
     // Manejo de tareas
     const agregarTarea = () => {
-        const nuevasTareas = [...visita.tareas, { id: crypto.randomUUID(), descripcion: '', completada: false }];
+        const nuevasTareas = [...(visita.tareas || []), { id: crypto.randomUUID(), descripcion: '', completada: false }];
         onUpdate('tareas', nuevasTareas);
     };
 
     const actualizarTarea = (tareaId, campo, valor) => {
-        const tareasActualizadas = visita.tareas.map(tarea =>
+        const tareasActualizadas = (visita.tareas || []).map(tarea =>
             tarea.id === tareaId ? { ...tarea, [campo]: valor } : tarea
         );
         onUpdate('tareas', tareasActualizadas);
     };
 
     const eliminarTarea = (tareaId) => {
-        const tareasActualizadas = visita.tareas.filter(tarea => tarea.id !== tareaId);
+        const tareasActualizadas = (visita.tareas || []).filter(tarea => tarea.id !== tareaId);
         onUpdate('tareas', tareasActualizadas);
     };
 
     return (
         <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50 hover:shadow-md transition-shadow">
-            {/* Encabezado de la visita */}
+            {/* Encabezado */}
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-manzur-primary">
                     🏢 Visita {index + 1}
@@ -67,7 +77,7 @@ export function VisitaForm({
                     <button
                         type="button"
                         onClick={onRemove}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 rounded hover:bg-red-50 transition-colors"
+                        className="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 rounded hover:bg-red-50"
                     >
                         🗑️ Eliminar visita
                     </button>
@@ -100,8 +110,8 @@ export function VisitaForm({
                     </label>
                     <select
                         value={visita.sucursal || ''}
-                        onChange={e => onUpdate('sucursal', e.target.value)}
-                        disabled={!selectedEmpresa}
+                        onChange={handleSucursalChange}
+                        disabled={!visita.empresa}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-manzur-primary disabled:bg-gray-100"
                         required
                     >
@@ -110,6 +120,9 @@ export function VisitaForm({
                             <option key={suc} value={suc}>{suc}</option>
                         ))}
                     </select>
+                    {!visita.empresa && (
+                        <p className="text-xs text-gray-500 mt-1">Primero seleccione una empresa</p>
+                    )}
                 </div>
 
                 {/* Provincia */}
@@ -129,42 +142,36 @@ export function VisitaForm({
                         ))}
                     </select>
                 </div>
+                <div className="flex flex-wrap gap-4">
+                    {/* Horarios */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Hora de ingreso <span className="text-red-500">*</span>
+                        </label>
+                        <TimeButton
+                            currentTime={visita.horarioIngreso}
+                            onSetTime={(val) => onUpdate('horarioIngreso', val)}
+                        />
+                    </div>
 
-                {/* Horario ingreso */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Hora de ingreso <span className="text-red-500">*</span>
-                    </label>
-                    <TimeButton
-                        currentTime={visita.horarioIngreso}
-                        onSetTime={(val) => onUpdate('horarioIngreso', val)}
-                    />
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Hora de egreso <span className="text-red-500">*</span>
+                        </label>
+                        <TimeButton
+                            currentTime={visita.horarioEgreso}
+                            onSetTime={(val) => onUpdate('horarioEgreso', val)}
+                        />
+                    </div>
                 </div>
-
-                {/* Horario egreso */}
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Hora de egreso <span className="text-red-500">*</span>
-                    </label>
-                    <TimeButton
-                        currentTime={visita.horarioEgreso}
-                        onSetTime={(val) => onUpdate('horarioEgreso', val)}
-                    />
-                </div>
-
-                {/* FIRMA de la visita */}
+                {/* Firma */}
                 <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        ✍️ Firma del responsable en la visita
+                        ✍️ Firma del responsable
                     </label>
-
                     {visita.firma ? (
                         <div className="mt-2 p-3 bg-gray-100 rounded-lg">
-                            <img
-                                src={visita.firma}
-                                alt="Firma"
-                                className="h-16 border rounded bg-white"
-                            />
+                            <img src={visita.firma} alt="Firma" className="h-16 border rounded bg-white" />
                             <div className="flex gap-2 mt-2">
                                 <button
                                     type="button"
@@ -186,14 +193,14 @@ export function VisitaForm({
                         <button
                             type="button"
                             onClick={() => setMostrarFirma(true)}
-                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm"
                         >
                             ✍️ Agregar firma
                         </button>
                     )}
                 </div>
 
-                {/* TAREAS de la visita */}
+                {/* Tareas */}
                 <div className="md:col-span-2">
                     <div className="flex justify-between items-center mb-2">
                         <label className="block text-sm font-medium text-gray-700">
@@ -207,40 +214,42 @@ export function VisitaForm({
                             + Agregar tarea
                         </button>
                     </div>
-
                     <div className="space-y-2">
-                        {visita.tareas?.map((tarea) => (
-                            <div key={tarea.id} className="flex items-center gap-2 p-2 bg-white rounded border">
-                                <input
-                                    type="checkbox"
-                                    checked={tarea.completada}
-                                    onChange={(e) => actualizarTarea(tarea.id, 'completada', e.target.checked)}
-                                    className="w-5 h-5 text-green-600 rounded"
-                                />
-                                <input
-                                    type="text"
-                                    value={tarea.descripcion}
-                                    onChange={(e) => actualizarTarea(tarea.id, 'descripcion', e.target.value)}
-                                    placeholder="Describir tarea realizada..."
-                                    className="flex-1 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-manzur-primary"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => eliminarTarea(tarea.id)}
-                                    className="text-red-500 hover:text-red-700 text-sm px-2"
-                                    disabled={visita.tareas.length === 1}
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        ))}
+                        {(visita.tareas || []).length === 0 ? (
+                            <p className="text-gray-400 text-sm italic">No hay tareas cargadas</p>
+                        ) : (
+                            (visita.tareas || []).map((tarea) => (
+                                <div key={tarea.id} className="flex items-center gap-2 p-2 bg-white rounded border">
+                                    <input
+                                        type="checkbox"
+                                        checked={tarea.completada}
+                                        onChange={(e) => actualizarTarea(tarea.id, 'completada', e.target.checked)}
+                                        className="w-5 h-5 text-green-600 rounded"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={tarea.descripcion}
+                                        onChange={(e) => actualizarTarea(tarea.id, 'descripcion', e.target.value)}
+                                        placeholder="Describir tarea realizada..."
+                                        className="flex-1 px-2 py-1 border rounded focus:outline-none focus:ring-1 focus:ring-manzur-primary"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => eliminarTarea(tarea.id)}
+                                        className="text-red-500 hover:text-red-700 text-sm px-2"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 
                 {/* Observaciones */}
                 <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        📝 Observaciones de la visita
+                        📝 Observaciones
                     </label>
                     <textarea
                         value={visita.observaciones || ''}

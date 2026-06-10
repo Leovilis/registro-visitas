@@ -16,7 +16,43 @@ import {
 
 const COLLECTION = "visitas";
 
+export const saveRecorrido = async (recorridoId, recorridoData) => {
+  try {
+    const recorridoRef = doc(db, "recorridos", recorridoId);
+    await setDoc(
+      recorridoRef,
+      {
+        ...recorridoData,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true },
+    );
+    return { success: true };
+  } catch (error) {
+    console.error("Error en saveRecorrido:", error);
+    throw error;
+  }
+};
+
 export const firestoreService = {
+  saveRecorrido: saveRecorrido,
+
+  // Dentro de firestoreService (agrega esta función)
+  async getRecorrido(recorridoId) {
+    try {
+      const recorridoRef = doc(db, "recorridos", recorridoId);
+      const docSnap = await getDoc(recorridoRef);
+
+      if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() };
+      }
+      return null;
+    } catch (error) {
+      console.error("Error en getRecorrido:", error);
+      throw error;
+    }
+  },
+
   // Guardar/Crear visita
   async saveVisita(visitaId, data) {
     const visitaRef = doc(db, COLLECTION, visitaId);
