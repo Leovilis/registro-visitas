@@ -1,8 +1,8 @@
 // src/app/page.js
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation"; // ✅ IMPORTAR
+import { useState, useEffect, Suspense } from "react"; // ✅ Agregar Suspense
+import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/app/components/layout/Header";
 import { SaveStatus } from "@/app/components/common/SaveStatus";
 import { TimelineBar } from "@/app/components/common/TimelineBar";
@@ -10,13 +10,14 @@ import { PrintButton } from "@/app/components/ui/PrintButton";
 import { useVisita } from "@/app/hooks/useVisita";
 import { RecorridoForm } from "@/app/components/forms/RecorridoForm";
 import { PrintableContent } from "@/app/components/ui/PrintableContent";
+import { LoadingSpinner } from "@/app/components/common/LoadingSpinner";
 
-export default function Home() {
+// Componente interno que usa useSearchParams
+function HomeContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const urlRecorridoId = searchParams.get("id"); // ✅ Obtener ID de la URL
+  const urlRecorridoId = searchParams.get("id");
 
-  // ✅ Pasar el ID al hook
   const {
     recorrido,
     recorridoId,
@@ -28,9 +29,9 @@ export default function Home() {
     addVisita,
     removeVisita,
     saveborrador,
-    savePDFToStorage,
+    // savePDFToStorage,
     newRecorrido,
-  } = useVisita(urlRecorridoId); // ← Pasar el ID de la URL
+  } = useVisita(urlRecorridoId);
 
   const [mounted, setMounted] = useState(false);
 
@@ -38,10 +39,8 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // ✅ Sincronizar la URL con el ID del recorrido
   useEffect(() => {
     if (mounted && recorridoId && !urlRecorridoId) {
-      // Si tenemos ID pero no está en la URL, agregarlo
       router.replace(`?id=${recorridoId}`);
     }
   }, [mounted, recorridoId, urlRecorridoId, router]);
@@ -93,5 +92,14 @@ export default function Home() {
 
       <PrintableContent recorrido={recorrido} recorridoId={recorridoId} />
     </div>
+  );
+}
+
+// Componente principal con Suspense
+export default function Home() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <HomeContent />
+    </Suspense>
   );
 }
