@@ -1,10 +1,11 @@
 // src/app/page.js
 "use client";
 
-import { useState, useEffect, Suspense } from "react"; // ✅ Agregar Suspense
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/app/components/layout/Header";
 import { SaveStatus } from "@/app/components/common/SaveStatus";
+import { Toast } from "@/app/components/common/Toast";
 import { TimelineBar } from "@/app/components/common/TimelineBar";
 import { PrintButton } from "@/app/components/ui/PrintButton";
 import { useVisita } from "@/app/hooks/useVisita";
@@ -24,13 +25,15 @@ function HomeContent() {
     saving,
     lastSaved,
     saveError,
+    toastMessage,
     updateRecorrido,
     updateVisita,
     addVisita,
     removeVisita,
     saveborrador,
-    // savePDFToStorage,
     newRecorrido,
+    validarYGenerarPDF,
+    clearToast,
   } = useVisita(urlRecorridoId);
 
   const [mounted, setMounted] = useState(false);
@@ -49,6 +52,16 @@ function HomeContent() {
 
   return (
     <div className="container mx-auto max-w-4xl p-4">
+      {/* Toast de notificación */}
+      {toastMessage && (
+        <Toast
+          message={toastMessage.message}
+          type={toastMessage.type}
+          onClose={clearToast}
+          duration={5000}
+        />
+      )}
+
       <div className="screen-content">
         <Header>
           <SaveStatus
@@ -78,6 +91,7 @@ function HomeContent() {
             viaje={recorrido}
             visitaId={recorridoId}
             onNewViaje={newRecorrido}
+            onValidarPDF={validarYGenerarPDF}
           />
         </section>
 

@@ -4,13 +4,22 @@
 import { useState } from 'react';
 import { generatePDF, generateFileName } from '@/app/utils/pdfGenerator';
 
-export function PrintButton({ viaje, visitaId, onNewViaje }) {
+export function PrintButton({ viaje, visitaId, onNewViaje, onValidarPDF }) {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleDownloadPDF = async () => {
     setIsGenerating(true);
 
     try {
+      // ✅ VALIDAR CAMPOS OBLIGATORIOS antes de generar el PDF
+      if (onValidarPDF) {
+        const resultado = await onValidarPDF();
+        if (!resultado.success) {
+          setIsGenerating(false);
+          return;
+        }
+      }
+
       // Generar el PDF
       const pdfBlob = await generatePDF(viaje, visitaId);
 

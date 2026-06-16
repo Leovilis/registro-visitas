@@ -2,31 +2,22 @@
 'use client';
 
 export function SaveStatus({ saving, lastSaved, saveError }) {
+    if (saving) {
+        return <span className="text-yellow-600 text-sm">⏳ Guardando...</span>;
+    }
     if (saveError) {
         return (
-            <span className="text-xs text-red-600 font-medium">
-                ⚠ {saveError}
-            </span>
+            <div className="text-red-600 text-sm max-w-md">
+                ❌ {saveError}
+            </div>
         );
     }
-
-    if (saving) {
-        return (
-            <span className="text-xs text-gray-500 animate-pulse">
-                💾 Guardando...
-            </span>
-        );
-    }
-
     if (lastSaved) {
         return (
-            <span className="text-xs text-green-600">
-                ✓ Guardado {lastSaved.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+            <span className="text-green-600 text-sm">
+                ✅ Guardado: {lastSaved.toLocaleTimeString()}
             </span>
         );
     }
-
-    return <span className="text-xs text-gray-400">Sin cambios</span>;
+    return <span className="text-gray-400 text-sm">Sin cambios</span>;
 }
-
-export default SaveStatus;
