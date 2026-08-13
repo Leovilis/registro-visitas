@@ -72,6 +72,7 @@ export function RecorridoForm({
                             Fecha del recorrido <span className="text-red-500">*</span>
                         </label>
                         <input
+                            id="fechaRecorrido"
                             type="date"
                             value={recorrido.fechaRecorrido || ''}
                             onChange={e => onUpdateRecorrido('fechaRecorrido', e.target.value)}
@@ -95,16 +96,44 @@ export function RecorridoForm({
                     </div>
                 </div>
 
-                {/* Horario de salida */}
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-4">
+                {/* HORARIO DE SALIDA - CON FECHA REAL */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div id="horarioSalida">
                         <label className="block text-sm font-semibold text-gray-700 mb-1">
                             Hora de salida de administración <span className="text-red-500">*</span>
                         </label>
-                        <TimeButton
-                            currentTime={recorrido.horarioSalida}
-                            onSetTime={(val) => onUpdateRecorrido('horarioSalida', val)}
-                        />
+                        <div className="flex items-center gap-2">
+                            <TimeButton
+                                currentTime={recorrido.horarioSalida}
+                                onSetTime={(val) => onUpdateRecorrido('horarioSalida', val)}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const now = new Date();
+                                    const hours = now.getHours().toString().padStart(2, '0');
+                                    const minutes = now.getMinutes().toString().padStart(2, '0');
+                                    const timeString = `${hours}:${minutes}`;
+                                    const dateString = now.toISOString().split('T')[0];
+                                    onUpdateRecorrido('horarioSalida', timeString);
+                                    onUpdateRecorrido('fechaSalida', dateString);
+                                    console.log("🕐 Salida registrada:", timeString, dateString);
+                                }}
+                                className="px-3 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors whitespace-nowrap"
+                            >
+                                🕐 Ahora
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                            La fecha de salida se registrará automáticamente al presionar "Ahora"
+                        </p>
+                    </div>
+                    
+                    <div className="flex items-end">
+                        <div className="text-sm text-gray-600">
+                            <span className="font-semibold">📅 Fecha de salida:</span>{' '}
+                            {recorrido.fechaSalida || 'No registrada'}
+                        </div>
                     </div>
                 </div>
 
@@ -167,12 +196,12 @@ export function RecorridoForm({
                     )}
                 </div>
 
-                {/* ✅ HORA DE LLEGADA - SOLO BOTÓN AHORA, SIN EDICIÓN MANUAL */}
+                {/* HORA DE LLEGADA - CON FECHA REAL */}
                 <div className="mt-6 pt-4 border-t border-gray-200">
                     <label className="block text-sm font-semibold text-gray-700 mb-1">
                         🏁 Hora de llegada a administración <span className="text-red-500">*</span>
                     </label>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm font-mono bg-gray-100 px-3 py-1 rounded-md">
                             {recorrido.horarioLlegada || '--:--'}
                         </span>
@@ -183,15 +212,21 @@ export function RecorridoForm({
                                 const hours = now.getHours().toString().padStart(2, '0');
                                 const minutes = now.getMinutes().toString().padStart(2, '0');
                                 const timeString = `${hours}:${minutes}`;
+                                const dateString = now.toISOString().split('T')[0];
                                 onUpdateRecorrido('horarioLlegada', timeString);
+                                onUpdateRecorrido('fechaLlegada', dateString);
+                                console.log("🕐 Llegada registrada:", timeString, dateString);
                             }}
                             className="px-3 py-1 bg-manzur-primary text-white rounded-md text-sm hover:bg-manzur-primary-dark transition-colors"
                         >
                             🕐 Ahora
                         </button>
+                        <span className="text-sm text-gray-500 ml-2">
+                            📅 Fecha de llegada: <span className="font-semibold">{recorrido.fechaLlegada || 'No registrada'}</span>
+                        </span>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                        Presione "Ahora" para registrar la hora actual de llegada
+                        Presione "Ahora" para registrar la hora y fecha exacta de llegada
                     </p>
                 </div>
             </div>

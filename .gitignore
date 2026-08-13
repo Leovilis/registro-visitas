@@ -61,3 +61,12 @@ next-env.d.ts
         store_icon.png
         tailwind.config.js
         twa-manifest.json
+.gradle/
+gradle/
+gradlew
+gradlew.bat
+build.gradle
+settings.gradle
+gradle.properties
+.gradle
+gradle

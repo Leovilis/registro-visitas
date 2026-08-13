@@ -42,8 +42,10 @@ function HomeContent() {
     setMounted(true);
   }, []);
 
+  // ✅ Sincronizar la URL con el ID del recorrido
   useEffect(() => {
     if (mounted && recorridoId && !urlRecorridoId) {
+      console.log("🔄 Sincronizando URL con ID:", recorridoId);
       router.replace(`?id=${recorridoId}`);
     }
   }, [mounted, recorridoId, urlRecorridoId, router]);
@@ -96,7 +98,10 @@ function HomeContent() {
         </section>
 
         <button
-          onClick={() => saveborrador()}
+          onClick={() => {
+            console.log("💾 Click en Guardar borrador");
+            saveborrador();
+          }}
           disabled={saving}
           className="fixed bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50 transition-all z-50"
         >
