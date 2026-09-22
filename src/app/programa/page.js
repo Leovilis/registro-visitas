@@ -243,33 +243,43 @@ export default function ProgramaPage() {
                   className="bg-white border rounded-lg"
                   open={v.fechaFin >= hoy}
                 >
-                  <summary className="p-3 cursor-pointer flex flex-wrap items-center gap-x-4 gap-y-1">
-                    <span className="font-semibold">Viaje {v.nro}</span>
-                    <span className="text-sm text-gray-600">
-                      {formatDate(v.fechaInicio)}
-                      {v.fechaFin !== v.fechaInicio &&
-                        ` al ${formatDate(v.fechaFin)}`}
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      👥 {v.tecnicos?.join(", ")}
-                    </span>
-                    <span className="ml-auto text-sm font-medium">
-                      {real}/{plan} equipos
-                    </span>
-                    <Link
-                      href={`/programa/viaje/${v.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-sm text-manzur-primary hover:underline"
-                    >
-                      Abrir →
-                    </Link>
+                  <summary className="p-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                    {/* Renglón 1: viaje y fechas · Renglón 2: técnicos, equipos y link */}
+                    <div className="flex items-baseline justify-between gap-2">
+                      <span className="font-semibold text-gray-900">
+                        Viaje {v.nro}
+                      </span>
+                      <span className="text-sm text-gray-600 text-right">
+                        {formatDate(v.fechaInicio)}
+                        {v.fechaFin &&
+                          v.fechaFin !== v.fechaInicio &&
+                          ` al ${formatDate(v.fechaFin)}`}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 mt-1 text-sm">
+                      <span className="text-gray-600 truncate">
+                        👥 {v.tecnicos?.join(", ") || "—"}
+                      </span>
+                      <span className="shrink-0 flex items-center gap-3">
+                        <span className="font-medium text-gray-900">
+                          {real}/{plan} equipos
+                        </span>
+                        <Link
+                          href={`/programa/viaje/${v.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-manzur-primary hover:underline"
+                        >
+                          Abrir →
+                        </Link>
+                      </span>
+                    </div>
                   </summary>
                   {/* Mobile: tarjetas */}
                   <ul className="sm:hidden border-t divide-y">
                     {paradas.map((p) => (
                       <li key={p.id} className="p-3 text-sm">
                         <div className="flex justify-between items-start gap-2">
-                          <span className="font-medium">
+                          <span className="font-medium text-gray-900">
                             {nombreSucursal(p.sucursalId)}
                           </span>
                           <span
