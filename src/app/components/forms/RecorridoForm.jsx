@@ -1,186 +1,157 @@
 // src/app/components/forms/RecorridoForm.jsx
 'use client';
 
-import { areas } from '@/app/utils/constants';
 import { TimeButton } from './TimeButton';
 import { VisitaForm } from './VisitaForm';
-import { createEmptyVisita } from '@/app/models/recorridoModel';
+import { createEmptyVisita, AREA_APP, fechaLocalISO, horaLocal } from '@/app/models/recorridoModel';
+
+const labelCls = 'block text-sm font-semibold text-gray-700 mb-1';
+const inputCls =
+    'w-full px-3 py-2 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-manzur-primary';
+
+// Bloque hora + fecha (salida y llegada). "Ahora" completa las dos;
+// si se carga la hora a mano y no hay fecha, se toma la de hoy.
+function HoraYFecha({ titulo, idHora, idFecha, hora, fecha, onCambiar }) {
+    return (
+        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className={labelCls}>
+                {titulo} <span className="text-red-500">*</span>
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div id={idHora}>
+                    <span className="block text-xs text-gray-500 mb-1">Hora</span>
+                    <TimeButton
+                        currentTime={hora}
+                        onSetTime={(val) => onCambiar({ hora: val, fecha: fecha || fechaLocalISO() })}
+                        onAhora={() => onCambiar({ hora: horaLocal(), fecha: fechaLocalISO() })}
+                    />
+                </div>
+                <label className="block">
+                    <span className="block text-xs text-gray-500 mb-1">Fecha</span>
+                    <input
+                        id={idFecha}
+                        type="date"
+                        value={fecha || ''}
+                        onChange={(e) => onCambiar({ hora, fecha: e.target.value })}
+                        className={inputCls}
+                    />
+                </label>
+            </div>
+        </div>
+    );
+}
 
 export function RecorridoForm({
     recorrido,
     onUpdateRecorrido,
     onUpdateVisita,
     onAddVisita,
-    onRemoveVisita
+    onRemoveVisita,
 }) {
     const agregarVisita = () => {
-        const nuevaVisita = createEmptyVisita(recorrido.visitas.length);
-        onAddVisita(nuevaVisita);
+        onAddVisita(createEmptyVisita(recorrido.visitas.length));
     };
 
     return (
         <section className="mb-6 bg-white border border-gray-200 rounded-lg shadow-sm">
-            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white rounded-t-lg">
-                <h2 className="text-xl font-bold text-manzur-primary">
-                    📋 Datos del Recorrido
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                    Complete todos los campos obligatorios (*)
-                </p>
+            <div className="px-3 py-3 sm:p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-white rounded-t-lg">
+                <h2 className="text-lg sm:text-xl font-bold text-manzur-primary">📋 Datos del recorrido</h2>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">Complete todos los campos obligatorios (*)</p>
             </div>
 
-            <div className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    {/* Visitante */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                            Visitante <span className="text-red-500">*</span>
+            <div className="p-3 sm:p-4 space-y-4">
+                {/* Datos generales */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="sm:col-span-2">
+                        <label htmlFor="visitante" className={labelCls}>
+                            Visitante/s <span className="text-red-500">*</span>
                         </label>
                         <input
                             id="visitante"
                             type="text"
                             value={recorrido.visitante || ''}
-                            onChange={e => onUpdateRecorrido('visitante', e.target.value)}
-                            placeholder="Nombre y apellido completo"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-manzur-primary"
+                            onChange={(e) => onUpdateRecorrido('visitante', e.target.value)}
+                            placeholder="Nombre y apellido, separados por coma"
+                            autoComplete="off"
+                            className={inputCls}
                             required
                         />
                     </div>
 
-                    {/* Área */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                            Área <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                            id="area"
-                            value={recorrido.area || ''}
-                            onChange={e => onUpdateRecorrido('area', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-manzur-primary"
-                            required
-                        >
-                            <option value="">Seleccionar área</option>
-                            {areas.map(area => (
-                                <option key={area} value={area}>{area}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Fecha del recorrido */}
-                    <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
+                        <label htmlFor="fechaRecorrido" className={labelCls}>
                             Fecha del recorrido <span className="text-red-500">*</span>
                         </label>
                         <input
                             id="fechaRecorrido"
                             type="date"
                             value={recorrido.fechaRecorrido || ''}
-                            onChange={e => onUpdateRecorrido('fechaRecorrido', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-manzur-primary"
+                            onChange={(e) => onUpdateRecorrido('fechaRecorrido', e.target.value)}
+                            className={inputCls}
                             required
                         />
                     </div>
 
-                    {/* Vehículo */}
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                            Vehículo / Kilometraje
-                        </label>
+                        <label htmlFor="vehiculo" className={labelCls}>Vehículo / Kilometraje</label>
                         <input
+                            id="vehiculo"
                             type="text"
                             value={recorrido.vehiculo || ''}
-                            onChange={e => onUpdateRecorrido('vehiculo', e.target.value)}
-                            placeholder="Ej: Ford Ranger - 12345 km"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-manzur-primary"
+                            onChange={(e) => onUpdateRecorrido('vehiculo', e.target.value)}
+                            placeholder="Ej: Amarok PKE - 12345 km"
+                            className={inputCls}
                         />
                     </div>
+
+                    <div className="flex items-center gap-2 text-sm text-gray-600 sm:col-span-2">
+                        <span className="font-semibold">Área:</span>
+                        <span id="area" className="px-2 py-0.5 bg-gray-100 rounded">{recorrido.area || AREA_APP}</span>
+                    </div>
                 </div>
 
-                {/* HORARIO DE SALIDA - CON FECHA REAL */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div id="horarioSalida">
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">
-                            Hora de salida de administración <span className="text-red-500">*</span>
-                        </label>
-                        <div className="flex items-center gap-2">
-                            <TimeButton
-                                currentTime={recorrido.horarioSalida}
-                                onSetTime={(val) => onUpdateRecorrido('horarioSalida', val)}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    const now = new Date();
-                                    const hours = now.getHours().toString().padStart(2, '0');
-                                    const minutes = now.getMinutes().toString().padStart(2, '0');
-                                    const timeString = `${hours}:${minutes}`;
-                                    const dateString = now.toISOString().split('T')[0];
-                                    onUpdateRecorrido('horarioSalida', timeString);
-                                    onUpdateRecorrido('fechaSalida', dateString);
-                                    console.log("🕐 Salida registrada:", timeString, dateString);
-                                }}
-                                className="px-3 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 transition-colors whitespace-nowrap"
-                            >
-                                🕐 Ahora
-                            </button>
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                            La fecha de salida se registrará automáticamente al presionar "Ahora"
-                        </p>
-                    </div>
-                    
-                    <div className="flex items-end">
-                        <div className="text-sm text-gray-600">
-                            <span className="font-semibold">📅 Fecha de salida:</span>{' '}
-                            {recorrido.fechaSalida || 'No registrada'}
-                        </div>
-                    </div>
-                </div>
+                {/* Salida */}
+                <HoraYFecha
+                    titulo="🚙 Salida de administración"
+                    idHora="horarioSalida"
+                    idFecha="fechaSalida"
+                    hora={recorrido.horarioSalida}
+                    fecha={recorrido.fechaSalida}
+                    onCambiar={({ hora, fecha }) => {
+                        onUpdateRecorrido('horarioSalida', hora);
+                        onUpdateRecorrido('fechaSalida', fecha);
+                    }}
+                />
 
                 {/* Observaciones generales */}
-                <div className="mb-4">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                        Observaciones generales del recorrido
+                <div>
+                    <label htmlFor="observacionesGenerales" className={labelCls}>
+                        Observaciones generales
                     </label>
                     <textarea
+                        id="observacionesGenerales"
                         value={recorrido.observacionesGenerales || ''}
-                        onChange={e => onUpdateRecorrido('observacionesGenerales', e.target.value)}
+                        onChange={(e) => onUpdateRecorrido('observacionesGenerales', e.target.value)}
                         rows="2"
-                        placeholder="Notas adicionales sobre el recorrido..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-manzur-primary"
+                        placeholder="Notas sobre el recorrido..."
+                        className={inputCls}
                     />
                 </div>
 
-                {/* Sección de visitas */}
-                <div className="mt-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <div>
-                            <h3 className="text-lg font-semibold text-manzur-primary">
-                                🏢 Visitas realizadas ({recorrido.visitas?.length || 0})
-                            </h3>
-                            <p className="text-xs text-gray-500 mt-1">
-                                Agregue todas las empresas visitadas durante el recorrido
-                            </p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={agregarVisita}
-                            className="px-4 py-2 bg-manzur-primary text-white text-sm rounded-lg hover:bg-manzur-primary-dark transition-colors font-medium shadow-sm flex items-center gap-2"
-                        >
-                            <span className="text-lg">+</span> Agregar visita
-                        </button>
+                {/* Visitas */}
+                <div>
+                    <div className="mb-3">
+                        <h3 className="text-base sm:text-lg font-semibold text-manzur-primary">
+                            🏢 Visitas ({recorrido.visitas?.length || 0})
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                            Una visita por sucursal (o por depósito, si corresponde)
+                        </p>
                     </div>
 
                     {recorrido.visitas?.length === 0 ? (
-                        <div className="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                        <div className="text-center py-8 mb-3 bg-gray-50 rounded-lg border border-dashed border-gray-300">
                             <p className="text-gray-500">No hay visitas cargadas</p>
-                            <button
-                                type="button"
-                                onClick={agregarVisita}
-                                className="mt-2 text-manzur-primary hover:text-manzur-primary-dark text-sm font-medium"
-                            >
-                                + Agregar primera visita
-                            </button>
                         </div>
                     ) : (
                         recorrido.visitas.map((visita, index) => (
@@ -191,44 +162,35 @@ export function RecorridoForm({
                                 canRemove={recorrido.visitas.length > 1}
                                 onUpdate={(field, value) => onUpdateVisita(visita.id, field, value)}
                                 onRemove={() => onRemoveVisita(visita.id)}
+                                area={recorrido.area || AREA_APP}
+                                fechaMin={recorrido.fechaSalida || undefined}
+                                fechaMax={recorrido.fechaLlegada || undefined}
                             />
                         ))
                     )}
+
+                    {/* Al final de la lista: después de completar una visita queda a mano */}
+                    <button
+                        type="button"
+                        onClick={agregarVisita}
+                        className="w-full py-3 border-2 border-dashed border-manzur-primary text-manzur-primary rounded-lg font-medium hover:bg-blue-50 active:scale-[0.99] transition"
+                    >
+                        + Agregar visita
+                    </button>
                 </div>
 
-                {/* HORA DE LLEGADA - CON FECHA REAL */}
-                <div className="mt-6 pt-4 border-t border-gray-200">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                        🏁 Hora de llegada a administración <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-mono bg-gray-100 px-3 py-1 rounded-md">
-                            {recorrido.horarioLlegada || '--:--'}
-                        </span>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                const now = new Date();
-                                const hours = now.getHours().toString().padStart(2, '0');
-                                const minutes = now.getMinutes().toString().padStart(2, '0');
-                                const timeString = `${hours}:${minutes}`;
-                                const dateString = now.toISOString().split('T')[0];
-                                onUpdateRecorrido('horarioLlegada', timeString);
-                                onUpdateRecorrido('fechaLlegada', dateString);
-                                console.log("🕐 Llegada registrada:", timeString, dateString);
-                            }}
-                            className="px-3 py-1 bg-manzur-primary text-white rounded-md text-sm hover:bg-manzur-primary-dark transition-colors"
-                        >
-                            🕐 Ahora
-                        </button>
-                        <span className="text-sm text-gray-500 ml-2">
-                            📅 Fecha de llegada: <span className="font-semibold">{recorrido.fechaLlegada || 'No registrada'}</span>
-                        </span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                        Presione "Ahora" para registrar la hora y fecha exacta de llegada
-                    </p>
-                </div>
+                {/* Llegada */}
+                <HoraYFecha
+                    titulo="🏁 Llegada a administración"
+                    idHora="horarioLlegada"
+                    idFecha="fechaLlegada"
+                    hora={recorrido.horarioLlegada}
+                    fecha={recorrido.fechaLlegada}
+                    onCambiar={({ hora, fecha }) => {
+                        onUpdateRecorrido('horarioLlegada', hora);
+                        onUpdateRecorrido('fechaLlegada', fecha);
+                    }}
+                />
             </div>
         </section>
     );

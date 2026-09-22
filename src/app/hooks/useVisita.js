@@ -8,9 +8,14 @@ import {
   createEmptyRecorrido,
   createEmptyVisita,
   ESTADO,
+  TIPO_TAREA,
 } from "@/app/models/recorridoModel";
+import { getSucursal } from "@/app/data/catalogoSucursales";
+import { aplicarRecorridoAlPrograma, getViaje, listParadasDeViaje } from "@/app/services/programaService";
+import { getEmpresa } from "@/app/data/catalogoSucursales";
+import { crearRecorridoDesdeViaje, tieneContenido } from "@/app/models/recorridoModel";
 
-export function useVisita(recorridoIdParam = null) {
+export function useVisita(recorridoIdParam = null, viajeParam = null) {
   const [recorrido, setRecorrido] = useState(createEmptyRecorrido());
   const [recorridoId, setRecorridoId] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -21,6 +26,10 @@ export function useVisita(recorridoIdParam = null) {
 
   const autoSaveTimeout = useRef(null);
   const isInitialMount = useRef(true);
+  // ID creado en esta sesión: cuando page.js lo pone en la URL, el efecto
+  // vuelve a correr; sin esto se recargaba desde Firestore (todavía vacío)
+  // y se perdía el recorrido precargado.
+  const idCreadoLocalmente = useRef(null);
 
   // ============================================
   // Cargar recorrido existente o crear nuevo
@@ -31,36 +40,59 @@ export function useVisita(recorridoIdParam = null) {
       console.log("🔵 initRecorrido - Iniciando...");
       console.log("🔵 recorridoIdParam:", recorridoIdParam);
 
+      if (recorridoIdParam && recorridoIdParam === idCreadoLocalmente.current) {
+        // ✅ CASO 0: es el recorrido que acabamos de crear → no recargar
+        setLoading(false);
+        return;
+      }
+
       if (recorridoIdParam) {
         // ✅ CASO 1: Hay ID en la URL → USAR ESE ID SIEMPRE
-        console.log("🔵 Usando ID de URL:", recorridoIdParam);
-        setRecorridoId(recorridoIdParam); // <-- NUNCA cambiar este ID
-        
+        setRecorridoId(recorridoIdParam);
         try {
           const data = await firestoreService.getRecorrido(recorridoIdParam);
-          console.log("🔵 Datos recibidos:", data);
-          if (data) {
-            console.log("🔵 Datos cargados correctamente");
-            setRecorrido(data);
-          } else {
-            console.log("🟡 No existe en Firestore, creando NUEVO con el MISMO ID:", recorridoIdParam);
-            setRecorrido(createEmptyRecorrido());
-            // ✅ NO generar nuevo ID, usar el mismo
-          }
+          setRecorrido(data || createEmptyRecorrido());
         } catch (error) {
           console.error("🔴 Error loading recorrido:", error);
           setSaveError("Error al cargar el recorrido: " + error.message);
-          // ✅ NO generar nuevo ID, usar el mismo
           setRecorrido(createEmptyRecorrido());
         }
       } else {
-        // ✅ CASO 2: Sin ID en URL → CREAR NUEVO ID
+        // ✅ CASO 2: Sin ID en URL → CREAR NUEVO (precargado si viene ?viaje=)
         const nuevoId = crypto.randomUUID();
-        console.log("🆕 Nuevo recorrido creado con ID:", nuevoId);
+        let nuevo = createEmptyRecorrido();
+
+        if (viajeParam) {
+          try {
+            const [viaje, paradas, sucursales] = await Promise.all([
+              getViaje(viajeParam),
+              listParadasDeViaje(viajeParam),
+              firestoreService.getSucursales(),
+            ]);
+            if (viaje) {
+              nuevo = crearRecorridoDesdeViaje(viaje, paradas, sucursales, getEmpresa);
+              setToastMessage({
+                message: `Recorrido precargado desde el viaje ${viaje.nro} (${nuevo.visitas.length} visitas)`,
+                type: "success",
+              });
+            }
+          } catch (error) {
+            console.error("🔴 Error precargando viaje:", error);
+            setSaveError("No se pudo precargar el viaje: " + error.message);
+          }
+        }
+
+        idCreadoLocalmente.current = nuevoId;
         setRecorridoId(nuevoId);
-        setRecorrido(createEmptyRecorrido());
-        // ✅ Actualizar la URL con el nuevo ID
+        setRecorrido(nuevo);
         window.history.replaceState({}, "", `?id=${nuevoId}`);
+
+        // Guardar enseguida si vino precargado, para no depender del auto-guardado
+        if (viajeParam && nuevo.viajePlanId) {
+          firestoreService.saveRecorrido(nuevoId, nuevo).catch((e) =>
+            console.error("🔴 Error guardando precarga:", e),
+          );
+        }
       }
 
       setLoading(false);
@@ -68,7 +100,7 @@ export function useVisita(recorridoIdParam = null) {
     };
 
     initRecorrido();
-  }, [recorridoIdParam]); // ✅ Solo se ejecuta cuando cambia el parámetro de la URL
+  }, [recorridoIdParam, viajeParam]); // ✅ Solo cuando cambian los parámetros de la URL
 
   // ============================================
   // Guardar recorrido (SIN validación - puede estar incompleto)
@@ -156,6 +188,27 @@ export function useVisita(recorridoIdParam = null) {
         if (!visita.sucursal || visita.sucursal.trim() === "") {
           errores.push({ field: `visita_${index}_sucursal`, label: `Visita ${num}: Sucursal` });
         }
+        const sucursalCat = getSucursal(visita.sucursalId);
+        if (visita.sucursal && !visita.sucursalId) {
+          errores.push({ field: `visita_${index}_sucursal`, label: `Visita ${num}: Sucursal (volver a elegirla de la lista)` });
+        }
+        if (sucursalCat?.depositos?.length && !visita.depositoId) {
+          errores.push({ field: `visita_${index}_deposito`, label: `Visita ${num}: Depósito` });
+        }
+        if (!visita.fecha) {
+          errores.push({ field: `visita_${index}_fecha`, label: `Visita ${num}: Fecha de la visita` });
+        } else if (
+          (recorrido.fechaSalida && visita.fecha < recorrido.fechaSalida) ||
+          (recorrido.fechaLlegada && visita.fecha > recorrido.fechaLlegada)
+        ) {
+          errores.push({ field: `visita_${index}_fecha`, label: `Visita ${num}: Fecha fuera del rango salida/llegada` });
+        }
+        (visita.tareas || []).forEach((t) => {
+          if (t.tipo === TIPO_TAREA.MANTENIMIENTO && t.completada &&
+              (t.equiposRealizados === null || t.equiposRealizados === undefined || t.equiposRealizados === "")) {
+            errores.push({ field: `visita_${index}_equipos_${t.id}`, label: `Visita ${num}: Equipos realizados` });
+          }
+        });
         if (!visita.provincia || visita.provincia.trim() === "") {
           errores.push({ field: `visita_${index}_provincia`, label: `Visita ${num}: Provincia` });
         }
@@ -310,20 +363,28 @@ export function useVisita(recorridoIdParam = null) {
     setRecorrido((prev) => ({ ...prev, [field]: value }));
   }, []);
 
+  // Acepta (visitaId, campo, valor) o (visitaId, { campo: valor, ... })
   const updateVisita = useCallback((visitaId, field, value) => {
+    const cambios = typeof field === "object" && field !== null ? field : { [field]: value };
     setRecorrido((prev) => ({
       ...prev,
       visitas: prev.visitas.map((v) =>
-        v.id === visitaId ? { ...v, [field]: value } : v,
+        v.id === visitaId ? { ...v, ...cambios } : v,
       ),
     }));
   }, []);
 
+  // La nueva visita hereda la fecha de la anterior (o la de salida)
   const addVisita = useCallback((nuevaVisita) => {
-    setRecorrido((prev) => ({
-      ...prev,
-      visitas: [...prev.visitas, nuevaVisita],
-    }));
+    setRecorrido((prev) => {
+      const base = nuevaVisita || createEmptyVisita(prev.visitas.length);
+      const ultima = prev.visitas[prev.visitas.length - 1];
+      const fecha = base.fecha || ultima?.fecha || prev.fechaSalida || prev.fechaRecorrido || "";
+      return {
+        ...prev,
+        visitas: [...prev.visitas, { ...base, fecha }],
+      };
+    });
   }, []);
 
   const removeVisita = useCallback((visitaId) => {
@@ -335,24 +396,51 @@ export function useVisita(recorridoIdParam = null) {
     }));
   }, []);
 
+  /**
+   * Finaliza el recorrido: intenta subir el PDF, lo aplica al programa F-ST-02
+   * y guarda todo en una sola escritura.
+   *
+   * La subida a Storage es opcional: si falla o tarda más de 20 s, el
+   * recorrido se finaliza igual (pdfUrl queda null). El PDF se puede
+   * regenerar en cualquier momento porque todos los datos, firmas incluidas,
+   * están en Firestore. Sin esto, el SDK de Storage reintenta hasta 10 minutos
+   * y el botón parece colgado.
+   */
   const savePDFToStorage = useCallback(
     async (pdfBlob) => {
+      if (autoSaveTimeout.current) clearTimeout(autoSaveTimeout.current);
+
+      let url = recorrido.pdfUrl || null;
+      let avisoStorage = null;
       try {
-        const { url } = await storageService.uploadPDF(recorridoId, pdfBlob);
-        await firestoreService.updateEstado(
-          recorridoId,
-          ESTADO.FINALIZADO,
-          url,
+        const subida = storageService.uploadPDF(recorridoId, pdfBlob);
+        const limite = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("tiempo de espera agotado")), 20000),
         );
-        updateRecorrido("estado", ESTADO.FINALIZADO);
-        updateRecorrido("pdfUrl", url);
-        return url;
+        ({ url } = await Promise.race([subida, limite]));
       } catch (error) {
-        console.error("Error uploading PDF:", error);
-        throw error;
+        console.warn("⚠️ No se pudo subir el PDF a Storage:", error);
+        avisoStorage = error.message;
       }
+
+      const programa = await aplicarRecorridoAlPrograma(recorridoId, recorrido);
+
+      const finalizado = {
+        ...recorrido,
+        estado: ESTADO.FINALIZADO,
+        pdfUrl: url,
+        finalizadoAt: new Date().toISOString(),
+        visitas: recorrido.visitas.map((v) =>
+          programa.asignaciones[v.id] ? { ...v, paradaPlanId: programa.asignaciones[v.id] } : v,
+        ),
+      };
+      await firestoreService.saveRecorrido(recorridoId, finalizado);
+      setRecorrido(finalizado);
+      setLastSaved(new Date());
+
+      return { url, programa, avisoStorage };
     },
-    [recorridoId, updateRecorrido],
+    [recorridoId, recorrido],
   );
 
   const saveborrador = useCallback(async () => {
@@ -363,7 +451,7 @@ export function useVisita(recorridoIdParam = null) {
   const newRecorrido = useCallback(() => {
     console.log("🆕 Creando nuevo recorrido...");
     const nuevoId = crypto.randomUUID();
-    console.log("🆕 Nuevo ID generado:", nuevoId);
+    idCreadoLocalmente.current = nuevoId;
     
     setRecorrido(createEmptyRecorrido());
     setRecorridoId(nuevoId);
@@ -381,7 +469,9 @@ export function useVisita(recorridoIdParam = null) {
       isInitialMount.current = false;
       return;
     }
-    if (recorridoId && !loading) {
+    // No guardar recorridos vacíos (antes cada vez que se abría la pantalla
+    // quedaba un borrador vacío en Firestore)
+    if (recorridoId && !loading && tieneContenido(recorrido)) {
       console.log("🔄 Auto-guardado activado por cambio en recorrido");
       saveRecorrido();
     }

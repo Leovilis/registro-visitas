@@ -29,13 +29,15 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
+# scripts
+scripts/data 
 # env files (can opt-in for committing if needed)
 .env*
 
 # vercel
 .vercel
-
+# service account
+service-account.json
 # typescript
 *.tsbuildinfo
 next-env.d.ts

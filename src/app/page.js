@@ -18,6 +18,7 @@ function HomeContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const urlRecorridoId = searchParams.get("id");
+  const urlViajeId = searchParams.get("viaje"); // desde "Iniciar recorrido" del programa
 
   const {
     recorrido,
@@ -31,10 +32,11 @@ function HomeContent() {
     addVisita,
     removeVisita,
     saveborrador,
+    savePDFToStorage,
     newRecorrido,
     validarYGenerarPDF,
     clearToast,
-  } = useVisita(urlRecorridoId);
+  } = useVisita(urlRecorridoId, urlViajeId);
 
   const [mounted, setMounted] = useState(false);
 
@@ -53,7 +55,7 @@ function HomeContent() {
   if (!mounted) return null;
 
   return (
-    <div className="container mx-auto max-w-4xl p-4">
+    <div className="container mx-auto max-w-4xl px-3 py-4 pb-24 sm:p-4 sm:pb-24">
       {/* Toast de notificación */}
       {toastMessage && (
         <Toast
@@ -94,6 +96,7 @@ function HomeContent() {
             visitaId={recorridoId}
             onNewViaje={newRecorrido}
             onValidarPDF={validarYGenerarPDF}
+            onFinalizar={savePDFToStorage}
           />
         </section>
 
@@ -103,7 +106,7 @@ function HomeContent() {
             saveborrador();
           }}
           disabled={saving}
-          className="fixed bottom-4 right-4 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50 transition-all z-50"
+          className="fixed bottom-4 right-4 px-4 py-3 sm:py-2 text-sm sm:text-base bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50 transition-all z-50"
         >
           {saving ? "⏳ Guardando..." : "💾 Guardar borrador"}
         </button>

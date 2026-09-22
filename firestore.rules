@@ -1,9 +1,43 @@
 rules_version = '2';
+
+// Reglas explícitas (reemplazan el "modo prueba", que vence y corta la app).
+// Por decisión actual, cualquiera puede leer y escribir estas colecciones.
+// Cuando se agregue Firebase Auth, cambiar `abierto()` por `request.auth != null`
+// y restringir el programa a usuarios de Sistemas.
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /visitas/{document} {
-      allow read: if true;
-      allow write: if request.auth == null; // Sin autenticación
+
+    function abierto() { return true; }
+
+    // Registro de visitas
+    match /recorridos/{id} {
+      allow read, write: if abierto();
+    }
+
+    // Catálogo: lo carga el script de seed; desde la app solo lectura
+    match /sucursales/{id} {
+      allow read: if abierto();
+      allow write: if false;
+    }
+
+    // Programa F-ST-02
+    match /programas/{id} {
+      allow read, write: if abierto();
+    }
+    match /viajesPlan/{id} {
+      allow read, write: if abierto();
+    }
+    match /paradasPlan/{id} {
+      allow read, update, create: if abierto();
+      allow delete: if false; // el historial del programa no se borra desde la app
+    }
+    match /motivosNoVisita/{id} {
+      allow read, write: if abierto();
+    }
+
+    // Todo lo demás (incluida la colección vieja `visitas`) queda cerrado
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

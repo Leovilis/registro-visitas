@@ -2,6 +2,33 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatDate, formatTime } from "./formatters";
+import { TIPO_TAREA } from "@/app/models/recorridoModel";
+
+// Datos del formulario controlado. Agregar la columna FECHA cambia el
+// formato: actualizar versión y fecha cuando Calidad apruebe la revisión.
+const FORMULARIO = {
+  codigo: "F-RD-04",
+  version: "v.02",
+  fechaRevision: "17/04/2025",
+  fechaVigencia: "17/04/2025",
+};
+
+// "11/06/2026" o "11/06/2026 al 12/06/2026" según las fechas de las visitas
+function rangoFechasVisitas(recorrido) {
+  const fechas = [...new Set((recorrido.visitas || []).map((v) => v.fecha).filter(Boolean))].sort();
+  if (fechas.length === 0) return formatDate(recorrido.fechaRecorrido) || formatDate(new Date());
+  if (fechas.length === 1) return formatDate(fechas[0]);
+  return `${formatDate(fechas[0])} al ${formatDate(fechas[fechas.length - 1])}`;
+}
+
+function descripcionTarea(tarea) {
+  const base = tarea.descripcion || "";
+  if (tarea.tipo === TIPO_TAREA.MANTENIMIENTO && tarea.equiposRealizados != null) {
+    const n = Number(tarea.equiposRealizados);
+    return `${base} (${n} ${n === 1 ? "equipo" : "equipos"})`;
+  }
+  return base;
+}
 
 export async function generatePDF(recorrido, recorridoId) {
   // ✅ Usar formato horizontal (landscape)
@@ -18,10 +45,13 @@ export async function generatePDF(recorrido, recorridoId) {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
+      // El logo original es de 4500 px: embebido tal cual, cada PDF pesaba ~80 MB.
+      // Se reduce a 600 px de ancho (sobra para 45 mm impresos).
+      const escala = Math.min(1, 600 / img.width);
       const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      canvas.getContext("2d").drawImage(img, 0, 0);
+      canvas.width = Math.round(img.width * escala);
+      canvas.height = Math.round(img.height * escala);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
       resolve(canvas.toDataURL("image/png"));
     };
     img.onerror = reject;
@@ -29,7 +59,7 @@ export async function generatePDF(recorrido, recorridoId) {
   });
 
   // Logo (izquierda) - ajustar width/height según proporción del logo
-  doc.addImage(logoBase64, "PNG", 14, yPos - 6, 45, 18);
+  doc.addImage(logoBase64, "PNG", 14, yPos - 6, 45, 18, undefined, "FAST");
 
   // Título centrado
   doc.setFontSize(14);
@@ -42,7 +72,7 @@ export async function generatePDF(recorrido, recorridoId) {
   // Fecha vigencia (derecha)
   doc.setFontSize(10);
   doc.setFont(undefined, "normal");
-  doc.text("Fecha de vigencia: 17/04/2025", 234, yPos - 3, { align: "center" });
+  doc.text(`Fecha de vigencia: ${FORMULARIO.fechaVigencia}`, 234, yPos - 3, { align: "center" });
 
   // Línea separadora
   yPos += 8;
@@ -79,17 +109,17 @@ export async function generatePDF(recorrido, recorridoId) {
   const empresasVisitadas = [
     ...new Set(recorrido.visitas?.map((v) => v.empresa).filter(Boolean)),
   ];
-  doc.text(empresasVisitadas.join(", ") || "No especificado", col1X + 55, rowY);
+  const empresasLineas = doc.splitTextToSize(
+    empresasVisitadas.join(", ") || "No especificado",
+    col2X - (col1X + 55) - 4,
+  );
+  doc.text(empresasLineas, col1X + 55, rowY);
 
   doc.setFont(undefined, "bold");
   doc.text("FECHA DE VISITA:", col2X, rowY);
   doc.setFont(undefined, "normal");
-  doc.text(
-    formatDate(recorrido.fechaRecorrido) || formatDate(new Date()),
-    col2X + 40,
-    rowY,
-  );
-  rowY += 8;
+  doc.text(rangoFechasVisitas(recorrido), col2X + 40, rowY);
+  rowY += 8 + (empresasLineas.length - 1) * 5;
 
   doc.setFont(undefined, "bold");
   doc.text("AREA/S:", col1X, rowY);
@@ -114,8 +144,9 @@ export async function generatePDF(recorrido, recorridoId) {
       ?.map((v) => v.sucursal)
       .filter(Boolean)
       .join(", ") || "No especificado";
-  doc.text(sucursalesList, col1X + 45, rowY);
-  rowY += 8;
+  const sucursalesLineas = doc.splitTextToSize(sucursalesList, 280 - (col1X + 45));
+  doc.text(sucursalesLineas, col1X + 45, rowY);
+  rowY += 8 + (sucursalesLineas.length - 1) * 5;
 
   // ============================================
   // VEHÍCULO Y KILOMETRAJE (NUEVO CAMPO)
@@ -188,9 +219,10 @@ export async function generatePDF(recorrido, recorridoId) {
         if (tarea.descripcion) {
           actividadesData.push([
             visita.sucursal || `Sucursal ${idx + 1}`,
+            formatDate(visita.fecha) || "--",
             visita.horarioIngreso || "--:--",
             visita.horarioEgreso || "--:--",
-            tarea.descripcion.substring(0, 60),
+            descripcionTarea(tarea),
             tarea.completada ? "SI" : "NO",
           ]);
         }
@@ -198,9 +230,10 @@ export async function generatePDF(recorrido, recorridoId) {
     } else if (visita.empresa) {
       actividadesData.push([
         visita.sucursal || `Sucursal ${idx + 1}`,
+        formatDate(visita.fecha) || "--",
         visita.horarioIngreso || "--:--",
         visita.horarioEgreso || "--:--",
-        visita.observaciones?.substring(0, 60) || `Visita a ${visita.empresa}`,
+        visita.observaciones || `Visita a ${visita.empresa}`,
         "SI",
       ]);
     }
@@ -209,6 +242,7 @@ export async function generatePDF(recorrido, recorridoId) {
   if (actividadesData.length === 0) {
     actividadesData.push([
       "No registrado",
+      "--",
       "--:--",
       "--:--",
       "Sin actividades",
@@ -221,6 +255,7 @@ export async function generatePDF(recorrido, recorridoId) {
     head: [
       [
         "SUCURSAL",
+        "FECHA",
         "INGRESO",
         "EGRESO",
         "DESCRIPCIÓN DE LA ACTIVIDAD",
@@ -229,6 +264,7 @@ export async function generatePDF(recorrido, recorridoId) {
     ],
     body: actividadesData,
     theme: "grid",
+    margin: { left: 14, right: 14 },
     styles: { fontSize: 9, cellPadding: 3 },
     headStyles: {
       fillColor: [66, 66, 66],
@@ -237,11 +273,12 @@ export async function generatePDF(recorrido, recorridoId) {
       fontStyle: "bold",
     },
     columnStyles: {
-      0: { cellWidth: 35 },
+      0: { cellWidth: 40 },
       1: { cellWidth: 22 },
-      2: { cellWidth: 22 },
-      3: { cellWidth: 130 },
-      4: { cellWidth: 25 },
+      2: { cellWidth: 20 },
+      3: { cellWidth: 20 },
+      4: { cellWidth: "auto" }, // toma el ancho que sobre (evita el aviso "could not fit page")
+      5: { cellWidth: 25 },
     },
   });
 
@@ -292,7 +329,7 @@ export async function generatePDF(recorrido, recorridoId) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`F-RD-04 v.02 - Fecha de revisión: 17/04/2025`, 14, 195);
+    doc.text(`${FORMULARIO.codigo} ${FORMULARIO.version} - Fecha de revisión: ${FORMULARIO.fechaRevision}`, 14, 195);
     doc.text(`Página ${i} de ${pageCount}`, 260, 195);
   }
 
