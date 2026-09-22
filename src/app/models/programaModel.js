@@ -148,6 +148,11 @@ export const calcularIndicadores = (todas, hoy) => {
 
 export const TECNICOS_DEFAULT = ["Leo", "Mauro", "Facu"];
 
+// Leyenda del F-ST-02: los Id resaltados en amarillo son viajes largos que
+// usan la camioneta dos días seguidos (se sale un día y se vuelve al otro).
+export const REFERENCIA_DEFAULT = "camioneta dos dias";
+export const COLOR_DOS_DIAS = "FFFFFF00"; // amarillo, igual que el Excel
+
 export const MESES = [
   "Enero",
   "Febrero",

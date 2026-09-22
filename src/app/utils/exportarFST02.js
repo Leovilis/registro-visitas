@@ -9,6 +9,7 @@ import {
   mesDeFecha,
   mesesDelPrograma,
   ESTADO_PARADA,
+  COLOR_DOS_DIAS,
 } from "@/app/models/programaModel";
 
 const FILA_ENCABEZADO = 10;
@@ -63,6 +64,8 @@ export async function generarFST02(ExcelJS, plantillaBuffer, data) {
   ws.name = String(programa.anio);
 
   const nroViaje = (viajeId) => viajes.find((v) => v.id === viajeId)?.nro ?? "";
+  const dosDias = (viajeId) =>
+    Boolean(viajes.find((v) => v.id === viajeId)?.camionetaDosDias);
   const suc = (id) => sucursales.find((s) => s.id === id);
   const empresa = (id) => empresas.find((e) => e.id === id)?.nombre || id;
   const nombreMotivo = (id) =>
@@ -99,7 +102,19 @@ export async function generarFST02(ExcelJS, plantillaBuffer, data) {
         ? p.tecnicosReales
         : p.tecnicosPlan) || [];
 
-    row.getCell(COL.id).value = nroViaje(p.viajeId);
+    const celdaId = row.getCell(COL.id);
+    celdaId.value = nroViaje(p.viajeId);
+    // Copia del estilo: las filas duplicadas comparten el objeto de estilo
+    celdaId.style = {
+      ...celdaId.style,
+      fill: dosDias(p.viajeId)
+        ? {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: COLOR_DOS_DIAS },
+          }
+        : { type: "pattern", pattern: "none" },
+    };
     row.getCell(COL.sucursal).value = s?.nombre || p.sucursalId;
     row.getCell(COL.empresa).value = s ? empresa(s.empresaId) : "";
     row.getCell(COL.equipos).value = p.equiposPlanificados ?? 0;

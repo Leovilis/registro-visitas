@@ -8,7 +8,7 @@ export const PROGRAMA_2026 = {
   formulario: "F-ST-02",
   version: "05",
   fechaVigencia: "2026-07-06",
-  referencia: "camioneta dos dias",
+  referencia: "camioneta dos dias", // leyenda: los Id resaltados en amarillo usan la camioneta dos días
   tecnicos: ["Leo", "Mauro", "Facu"],
 };
 
@@ -29,6 +29,7 @@ export const VIAJES_2026 = [
   },
   {
     id: "2026__v03",
+    camionetaDosDias: true,
     nro: 3,
     fechaInicio: "2026-06-11",
     fechaFin: "2026-06-12",
@@ -57,6 +58,7 @@ export const VIAJES_2026 = [
   },
   {
     id: "2026__v07",
+    camionetaDosDias: true,
     nro: 7,
     fechaInicio: "2026-09-03",
     fechaFin: "2026-09-04",

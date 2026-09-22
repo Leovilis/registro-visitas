@@ -26,6 +26,7 @@ import {
   ESTADO_PARADA,
   ESTADO_PARADA_LABEL,
   TECNICOS_DEFAULT,
+  REFERENCIA_DEFAULT,
 } from "@/app/models/programaModel";
 import { fechaLocalISO } from "@/app/models/recorridoModel";
 import { formatDate } from "@/app/utils/formatters";
@@ -67,7 +68,7 @@ function SelectorTecnicos({ opciones, value, onChange }) {
 function CrearPrograma({ anio, sucursales, onCreado }) {
   const [version, setVersion] = useState("01");
   const [fechaVigencia, setFechaVigencia] = useState("");
-  const [referencia, setReferencia] = useState("");
+  const [referencia, setReferencia] = useState(REFERENCIA_DEFAULT);
   const [copiar, setCopiar] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState(null);
@@ -356,6 +357,7 @@ function EditorPrograma() {
   const [nuevoViaje, setNuevoViaje] = useState({
     fechaInicio: "",
     tecnicos: [],
+    camionetaDosDias: false,
   });
 
   const cargar = useCallback(async () => {
@@ -424,7 +426,7 @@ function EditorPrograma() {
   const agregarViaje = async () => {
     try {
       await crearViaje(anio, nuevoViaje);
-      setNuevoViaje({ fechaInicio: "", tecnicos: [] });
+      setNuevoViaje({ fechaInicio: "", tecnicos: [], camionetaDosDias: false });
       cargar();
     } catch (e) {
       alert(e.message);
@@ -559,6 +561,26 @@ function EditorPrograma() {
                       cargar();
                     }}
                   />
+                  <label
+                    className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded cursor-pointer ${
+                      v.camionetaDosDias
+                        ? "bg-yellow-200 text-yellow-900"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                    title="Viaje largo: se sale un día y se vuelve al otro (se resalta en amarillo en el F-ST-02)"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={Boolean(v.camionetaDosDias)}
+                      onChange={async (e) => {
+                        await actualizarViaje(v.id, {
+                          camionetaDosDias: e.target.checked,
+                        });
+                        cargar();
+                      }}
+                    />
+                    🚙 Camioneta 2 días
+                  </label>
                   {paradas.length === 0 && (
                     <button
                       type="button"
@@ -616,6 +638,19 @@ function EditorPrograma() {
                 value={nuevoViaje.tecnicos}
                 onChange={(t) => setNuevoViaje({ ...nuevoViaje, tecnicos: t })}
               />
+              <label className="flex items-center gap-1.5 text-sm text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={nuevoViaje.camionetaDosDias}
+                  onChange={(e) =>
+                    setNuevoViaje({
+                      ...nuevoViaje,
+                      camionetaDosDias: e.target.checked,
+                    })
+                  }
+                />
+                🚙 Camioneta 2 días
+              </label>
               <button
                 type="button"
                 onClick={agregarViaje}

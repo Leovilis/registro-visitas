@@ -9,8 +9,17 @@
 // cargados desde la app). Con --force se reescribe todo.
 
 import { db } from "./firebaseAdmin.mjs";
-import { PROGRAMA_2026, VIAJES_2026, PARADAS_2026 } from "../src/app/data/programa2026.js";
-import { createParada, totalesDesdeAportes, ESTADO_PARADA, MOTIVOS_DEFAULT } from "../src/app/models/programaModel.js";
+import {
+  PROGRAMA_2026,
+  VIAJES_2026,
+  PARADAS_2026,
+} from "../src/app/data/programa2026.js";
+import {
+  createParada,
+  totalesDesdeAportes,
+  ESTADO_PARADA,
+  MOTIVOS_DEFAULT,
+} from "../src/app/models/programaModel.js";
 
 const dryRun = process.argv.includes("--dry-run");
 const force = process.argv.includes("--force");
@@ -26,11 +35,16 @@ const set = (ref, data) => {
 };
 
 // Programa
-set(db.collection("programas").doc(PROGRAMA_2026.id), { ...PROGRAMA_2026, createdAt: now });
+set(db.collection("programas").doc(PROGRAMA_2026.id), {
+  ...PROGRAMA_2026,
+  createdAt: now,
+});
 
 // Viajes
 for (const v of VIAJES_2026) {
-  set(db.collection("viajesPlan").doc(v.id), { ...v, programaId: PROGRAMA_2026.id });
+  const ref = db.collection("viajesPlan").doc(v.id);
+  if (!force && (await ref.get()).exists) continue; // no pisar cambios hechos desde la app
+  set(ref, { camionetaDosDias: false, ...v, programaId: PROGRAMA_2026.id });
 }
 
 // Paradas
@@ -61,10 +75,19 @@ for (const p of PARADAS_2026) {
 // Motivos
 MOTIVOS_DEFAULT.forEach((descripcion, orden) => {
   const id = descripcion
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-  set(db.collection("motivosNoVisita").doc(id), { descripcion, orden, activo: true });
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+  set(db.collection("motivosNoVisita").doc(id), {
+    descripcion,
+    orden,
+    activo: true,
+  });
 });
 
 if (!dryRun) await batch.commit();
-console.log(`\n${dryRun ? "[dry-run] " : ""}${escritos} documentos escritos, ${salteados} paradas existentes salteadas.`);
+console.log(
+  `\n${dryRun ? "[dry-run] " : ""}${escritos} documentos escritos, ${salteados} paradas existentes salteadas.`,
+);

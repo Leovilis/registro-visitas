@@ -248,6 +248,11 @@ export default function ProgramaPage() {
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="font-semibold text-gray-900">
                         Viaje {v.nro}
+                        {v.camionetaDosDias && (
+                          <span className="ml-2 align-middle text-xs font-normal px-1.5 py-0.5 rounded bg-yellow-200 text-yellow-900">
+                            🚙 2 días
+                          </span>
+                        )}
                       </span>
                       <span className="text-sm text-gray-600 text-right">
                         {formatDate(v.fechaInicio)}

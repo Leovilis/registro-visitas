@@ -195,7 +195,7 @@ export default function ViajePage() {
                 datos.viaje.fechaFin !== datos.viaje.fechaInicio
                   ? ` al ${formatDate(datos.viaje.fechaFin)}`
                   : ""
-              } · ${datos.viaje.tecnicos?.join(", ") || ""}`
+              } · ${datos.viaje.tecnicos?.join(", ") || ""}${datos.viaje.camionetaDosDias ? " · 🚙 camioneta 2 días" : ""}`
             : ""
         }
       >
@@ -360,3 +360,4 @@ export default function ViajePage() {
     </div>
   );
 }
+  

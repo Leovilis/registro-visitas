@@ -328,6 +328,7 @@ export const crearPrograma = async ({
         fechaInicio: sumarAnio(v.fechaInicio, salto),
         fechaFin: sumarAnio(v.fechaFin, salto),
         tecnicos: v.tecnicos || [],
+        camionetaDosDias: Boolean(v.camionetaDosDias),
         createdAt: ahora(),
       });
       copiados.viajes++;
@@ -362,7 +363,7 @@ export const actualizarPrograma = async (programaId, campos) => {
 
 export const crearViaje = async (
   programaId,
-  { fechaInicio, tecnicos = [] },
+  { fechaInicio, tecnicos = [], camionetaDosDias = false },
 ) => {
   const viajes = await listViajes(programaId);
   const nro = viajes.reduce((max, v) => Math.max(max, v.nro), 0) + 1;
@@ -374,6 +375,7 @@ export const crearViaje = async (
     fechaInicio,
     fechaFin: fechaInicio,
     tecnicos,
+    camionetaDosDias: Boolean(camionetaDosDias),
     createdAt: ahora(),
   });
   return id;
