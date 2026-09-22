@@ -796,3 +796,22 @@ html {
 .production .test-sticky-button {
   display: none;
 }
+
+/* Campos de fecha y hora: Chrome en Android los dibuja con texto gris casi
+   invisible. Se fuerza texto oscuro sobre fondo blanco. */
+input[type="time"],
+input[type="date"] {
+  color: #111827;
+  background-color: #fff;
+  color-scheme: light;
+}
+input[type="time"]::-webkit-date-and-time-value,
+input[type="date"]::-webkit-date-and-time-value {
+  color: #111827;
+  text-align: left;
+}
+input[type="time"]:disabled,
+input[type="date"]:disabled {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}

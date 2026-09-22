@@ -4,6 +4,8 @@
 // Campo de hora + botón "Ahora" en una sola línea.
 // - El input type="time" abre el selector nativo del celular (reemplaza "Editar").
 // - text-base (16 px) evita que iOS haga zoom al tocar el campo.
+// - El color del texto lo fija globals.css (.campo-hora): Chrome en Android
+//   dibujaba la hora en gris casi invisible sobre fondo gris.
 // - onAhora (opcional) permite que el padre haga algo más, p.ej. guardar la fecha.
 
 import { horaLocal } from '@/app/models/recorridoModel';
@@ -19,13 +21,13 @@ export function TimeButton({ currentTime, onSetTime, onAhora, id, disabled = fal
                 value={currentTime || ''}
                 onChange={(e) => onSetTime(e.target.value)}
                 disabled={disabled}
-                className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-md text-base font-mono focus:outline-none focus:ring-2 focus:ring-manzur-primary disabled:bg-gray-100"
+                className="campo-hora flex-1 min-w-0 h-11 px-3 border border-gray-300 rounded-md text-base bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-manzur-primary disabled:bg-gray-100"
             />
             <button
                 type="button"
                 onClick={marcarAhora}
                 disabled={disabled}
-                className="shrink-0 px-3 py-2 bg-manzur-primary text-white rounded-md text-sm font-medium hover:bg-manzur-primary-dark active:scale-95 transition disabled:opacity-50"
+                className="shrink-0 h-11 px-3 bg-manzur-primary text-white rounded-md text-sm font-medium hover:bg-manzur-primary-dark active:scale-95 transition disabled:opacity-50"
             >
                 🕐 Ahora
             </button>

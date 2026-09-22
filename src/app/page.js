@@ -106,9 +106,15 @@ function HomeContent() {
             saveborrador();
           }}
           disabled={saving}
-          className="fixed bottom-4 right-4 px-4 py-3 sm:py-2 text-sm sm:text-base bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50 transition-all z-50"
+          className="fixed bottom-4 right-4 w-14 h-14 sm:w-auto sm:h-auto sm:px-4 sm:py-2 flex items-center justify-center gap-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50 transition-all z-50"
+          aria-label="Guardar borrador"
+          title="Guardar borrador"
         >
-          {saving ? "⏳ Guardando..." : "💾 Guardar borrador"}
+          {/* En mobile solo el ícono: el texto tapaba los campos (igual hay auto-guardado) */}
+          <span className="text-xl sm:text-base">{saving ? "⏳" : "💾"}</span>
+          <span className="hidden sm:inline">
+            {saving ? "Guardando..." : "Guardar borrador"}
+          </span>
         </button>
       </div>
 
