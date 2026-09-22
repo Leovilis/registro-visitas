@@ -114,6 +114,14 @@ export function VisitaForm({
                 if (t.id !== tareaId) return t;
                 const next = { ...t, ...cambios };
                 if (next.tipo !== TIPO_TAREA.MANTENIMIENTO) next.equiposRealizados = null;
+                // Cargar equipos realizados implica que el mantenimiento se hizo
+                if (
+                    next.tipo === TIPO_TAREA.MANTENIMIENTO &&
+                    'equiposRealizados' in cambios &&
+                    Number(cambios.equiposRealizados) > 0
+                ) {
+                    next.completada = true;
+                }
                 return next;
             }),
         );
@@ -405,6 +413,12 @@ export function VisitaForm({
                                                     </label>
                                                 )}
                                             </div>
+                                        )}
+
+                                        {esMant && !tarea.completada && (
+                                            <p className="pl-7 text-xs text-amber-700">
+                                                ⚠️ Sin tildar como finalizada, esta visita no cuenta en el programa F-ST-02.
+                                            </p>
                                         )}
                                     </div>
                                 );

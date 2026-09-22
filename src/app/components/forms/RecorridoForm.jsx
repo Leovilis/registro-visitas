@@ -3,7 +3,7 @@
 
 import { TimeButton } from './TimeButton';
 import { VisitaForm } from './VisitaForm';
-import { createEmptyVisita, AREA_APP, fechaLocalISO, horaLocal } from '@/app/models/recorridoModel';
+import { createEmptyVisita, AREA_APP, VEHICULOS, fechaLocalISO, horaLocal } from '@/app/models/recorridoModel';
 
 const labelCls = 'block text-sm font-semibold text-gray-700 mb-1';
 const inputCls =
@@ -93,15 +93,38 @@ export function RecorridoForm({
                     </div>
 
                     <div>
-                        <label htmlFor="vehiculo" className={labelCls}>Vehículo / Kilometraje</label>
-                        <input
-                            id="vehiculo"
-                            type="text"
-                            value={recorrido.vehiculo || ''}
-                            onChange={(e) => onUpdateRecorrido('vehiculo', e.target.value)}
-                            placeholder="Ej: Amarok PKE - 12345 km"
-                            className={inputCls}
-                        />
+                        <label htmlFor="vehiculo" className={labelCls}>
+                            Vehículo <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex gap-2">
+                            <select
+                                id="vehiculo"
+                                value={recorrido.vehiculo || ''}
+                                onChange={(e) => onUpdateRecorrido('vehiculo', e.target.value)}
+                                className={`${inputCls} flex-1 min-w-0 bg-white`}
+                                required
+                            >
+                                <option value="">Seleccionar</option>
+                                {VEHICULOS.map((v) => (
+                                    <option key={v} value={v}>{v}</option>
+                                ))}
+                                {/* Recorridos viejos con texto libre: se muestra para no perderlo */}
+                                {recorrido.vehiculo && !VEHICULOS.includes(recorrido.vehiculo) && (
+                                    <option value={recorrido.vehiculo}>{recorrido.vehiculo} (cargado antes)</option>
+                                )}
+                            </select>
+                            <input
+                                id="kilometraje"
+                                type="number"
+                                inputMode="numeric"
+                                min="0"
+                                value={recorrido.kilometraje || ''}
+                                onChange={(e) => onUpdateRecorrido('kilometraje', e.target.value)}
+                                placeholder="Km"
+                                aria-label="Kilometraje"
+                                className={`${inputCls} w-28`}
+                            />
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-gray-600 sm:col-span-2">

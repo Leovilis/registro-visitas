@@ -13,6 +13,7 @@ import {
   writeBatch,
   runTransaction,
   arrayUnion,
+  arrayRemove,
 } from "firebase/firestore";
 import {
   ESTADO_PARADA,
@@ -161,12 +162,16 @@ const tieneMantenimientoFinalizado = (visita) =>
     (t) => t.tipo === TIPO_TAREA.MANTENIMIENTO && t.completada,
   );
 
+const tieneMantenimientoSinFinalizar = (visita) =>
+  (visita.tareas || []).some(
+    (t) => t.tipo === TIPO_TAREA.MANTENIMIENTO && !t.completada,
+  );
+
 /**
- * Busca la parada del programa para una sucursal cuando la visita no trae
- * paradaPlanId (visita no iniciada desde el programa, p.ej. Salta Boutique).
+ * Parada del programa para una sucursal cuando la visita no trae paradaPlanId.
  * Prioridad: 1) no visitada todavía  2) visitada pero incompleta (Sleiman:
  * el segundo depósito completa la misma parada). Si no hay, es una visita
- * extra fuera del programa y no se vincula.
+ * fuera del programa.
  */
 const buscarParadaAbierta = async (sucursalId, anio) => {
   const snap = await getDocs(
@@ -186,29 +191,77 @@ const buscarParadaAbierta = async (sucursalId, anio) => {
   );
 };
 
+/** Paradas que hoy tienen un aporte de este recorrido. */
+const paradasVinculadas = async (recorridoId) =>
+  porId(
+    await getDocs(
+      query(
+        collection(db, PARADAS),
+        where("recorridoIds", "array-contains", recorridoId),
+      ),
+    ),
+  );
+
+/** Saca el aporte de un recorrido de una parada. Si no le queda ninguno, vuelve a pendiente. */
+const quitarAporte = (paradaId, recorridoId) =>
+  runTransaction(db, async (tx) => {
+    const ref = doc(db, PARADAS, paradaId);
+    const snap = await tx.get(ref);
+    if (!snap.exists()) return;
+    const { [recorridoId]: _quitado, ...aportes } = snap.data().aportes || {};
+    const vacia = Object.keys(aportes).length === 0;
+    tx.update(ref, {
+      aportes,
+      ...totalesDesdeAportes(aportes),
+      ...(vacia ? { estado: ESTADO_PARADA.PENDIENTE, tecnicosReales: [] } : {}),
+      recorridoIds: arrayRemove(recorridoId),
+      updatedAt: ahora(),
+      historial: arrayUnion({ tipo: "desvinculada", recorridoId, at: ahora() }),
+    });
+  });
+
 /**
- * Aplica un recorrido finalizado al programa.
- * Solo cuentan las visitas con una tarea de mantenimiento finalizada.
- * Es idempotente: cada recorrido guarda su aporte con su propia clave.
+ * Deja el programa consistente con el recorrido tal como está ahora.
+ * - Solo cuentan las visitas con una tarea de mantenimiento FINALIZADA.
+ * - Si una visita se borró, o su tarea dejó de estar finalizada, el aporte
+ *   de este recorrido se quita de esa parada (y vuelve a pendiente si no
+ *   tenía otros).
+ * - Idempotente: cada recorrido guarda su aporte con su propia clave.
  *
- * @returns {{ asignaciones: Record<visitaId, paradaId>, resumen: Array, sinParada: Array }}
+ * @returns {{ asignaciones, resumen, sinParada, sinMantenimiento }}
  */
-export const aplicarRecorridoAlPrograma = async (recorridoId, recorrido) => {
+export const sincronizarRecorridoConPrograma = async (
+  recorridoId,
+  recorrido,
+) => {
   const tecnicos = (recorrido.visitante || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
 
-  // 1) Resolver la parada de cada visita
+  const vinculadas = await paradasVinculadas(recorridoId);
+
+  // 1) Resolver la parada de cada visita:
+  //    paradaPlanId → la que ya tenía este recorrido → una abierta
   const asignaciones = {};
   const sinParada = [];
+  const sinMantenimiento = [];
   for (const v of recorrido.visitas || []) {
-    if (!v.sucursalId || !tieneMantenimientoFinalizado(v)) continue;
-    let paradaId = v.paradaPlanId;
+    if (!v.sucursalId) continue;
+    if (!tieneMantenimientoFinalizado(v)) {
+      if (tieneMantenimientoSinFinalizar(v))
+        sinMantenimiento.push({ visitaId: v.id, sucursal: v.sucursal });
+      continue;
+    }
+    let paradaId =
+      v.paradaPlanId ||
+      vinculadas.find((p) => p.sucursalId === v.sucursalId)?.id ||
+      null;
     if (!paradaId) {
       const anio = (v.fecha || recorrido.fechaRecorrido || "").slice(0, 4);
-      const p = anio ? await buscarParadaAbierta(v.sucursalId, anio) : null;
-      paradaId = p?.id || null;
+      paradaId = anio
+        ? (await buscarParadaAbierta(v.sucursalId, anio))?.id || null
+        : null;
     }
     if (paradaId) asignaciones[v.id] = paradaId;
     else sinParada.push({ visitaId: v.id, sucursal: v.sucursal });
@@ -225,7 +278,14 @@ export const aplicarRecorridoAlPrograma = async (recorridoId, recorrido) => {
     grupos[paradaId].visitaIds.push(v.id);
   }
 
-  // 3) Escribir el aporte en cada parada
+  // 3) Quitar el aporte de las paradas que ya no corresponden
+  const desvinculadas = vinculadas
+    .filter((p) => !grupos[p.id])
+    .map((p) => p.id);
+  for (const paradaId of desvinculadas)
+    await quitarAporte(paradaId, recorridoId);
+
+  // 4) Escribir el aporte en cada parada
   const resumen = [];
   for (const [paradaId, g] of Object.entries(grupos)) {
     const ref = doc(db, PARADAS, paradaId);
@@ -260,7 +320,21 @@ export const aplicarRecorridoAlPrograma = async (recorridoId, recorrido) => {
     });
   }
 
-  return { asignaciones, resumen, sinParada };
+  return { asignaciones, resumen, sinParada, sinMantenimiento, desvinculadas };
+};
+
+// Nombre anterior (lo usa el hook)
+export const aplicarRecorridoAlPrograma = sincronizarRecorridoConPrograma;
+
+/**
+ * Elimina un recorrido (borrador o finalizado) y revierte lo que aportó al
+ * programa. El PDF que ya se archivó no se ve afectado.
+ */
+export const eliminarRecorrido = async (recorridoId) => {
+  const vinculadas = await paradasVinculadas(recorridoId);
+  for (const p of vinculadas) await quitarAporte(p.id, recorridoId);
+  await deleteDoc(doc(db, "recorridos", recorridoId));
+  return { paradasRevertidas: vinculadas.length };
 };
 
 // ------------------------------------------------------------

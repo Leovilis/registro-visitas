@@ -33,6 +33,7 @@ function HomeContent() {
     removeVisita,
     saveborrador,
     savePDFToStorage,
+    eliminarRecorridoActual,
     newRecorrido,
     validarYGenerarPDF,
     clearToast,
@@ -80,6 +81,18 @@ function HomeContent() {
           )}
         </Header>
 
+        {recorrido.estado === "finalizado" && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900">
+            <p className="font-semibold">Recorrido finalizado</p>
+            <p className="mt-1">
+              Podés corregirlo: los cambios se guardan solos y el programa
+              F-ST-02 se actualiza (si quitás una visita o destildás el
+              mantenimiento, esa sucursal vuelve a pendiente). Para tener el PDF
+              corregido, tocá &quot;Guardar cambios y regenerar PDF&quot;.
+            </p>
+          </div>
+        )}
+
         <RecorridoForm
           recorrido={recorrido}
           onUpdateRecorrido={updateRecorrido}
@@ -90,7 +103,7 @@ function HomeContent() {
 
         <TimelineBar recorrido={recorrido} />
 
-        <section className="mt-6 p-4 bg-white border rounded-lg">
+        <section className="mt-6 p-4 bg-white border rounded-lg space-y-3">
           <PrintButton
             viaje={recorrido}
             visitaId={recorridoId}
@@ -98,6 +111,25 @@ function HomeContent() {
             onValidarPDF={validarYGenerarPDF}
             onFinalizar={savePDFToStorage}
           />
+          <button
+            type="button"
+            onClick={async () => {
+              const aviso =
+                recorrido.estado === "finalizado"
+                  ? "¿Eliminar este recorrido FINALIZADO?\n\nLas sucursales que marcó como visitadas vuelven a pendiente en el programa (salvo que otro recorrido las respalde). No se puede deshacer."
+                  : "¿Eliminar este borrador? No se puede deshacer.";
+              if (!confirm(aviso)) return;
+              try {
+                await eliminarRecorridoActual();
+                router.push("/recorridos");
+              } catch (e) {
+                alert("No se pudo eliminar: " + e.message);
+              }
+            }}
+            className="w-full py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
+          >
+            🗑️ Eliminar recorrido
+          </button>
         </section>
 
         <button

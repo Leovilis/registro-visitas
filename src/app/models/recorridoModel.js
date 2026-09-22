@@ -32,6 +32,19 @@ export const TIPO_TAREA_LABEL = {
 // Esta versión de la app es solo para Sistemas
 export const AREA_APP = "SISTEMAS";
 
+// Vehículos habilitados para los recorridos
+export const VEHICULOS = [
+  "Hilux (MVH749)",
+  "Amarok (AB862EW)",
+  "Amarok (PKE986)",
+];
+
+/** "Amarok (PKE986) - 12345 km" para el PDF y los listados. */
+export const textoVehiculo = (r) =>
+  [r?.vehiculo, r?.kilometraje ? `${r.kilometraje} km` : ""]
+    .filter(Boolean)
+    .join(" - ");
+
 /**
  * Fecha local "YYYY-MM-DD". No usar toISOString(): devuelve la fecha en UTC
  * y en Argentina (UTC-3) después de las 21 h marca el día siguiente.
@@ -95,6 +108,7 @@ export const createEmptyRecorrido = () => {
     horarioSalida: "",
     horarioLlegada: "",
     vehiculo: "",
+    kilometraje: "",
     observacionesGenerales: "",
     estado: ESTADO.BORRADOR,
     pdfUrl: null,

@@ -43,6 +43,11 @@ export function PrintButton({ viaje, visitaId, onNewViaje, onValidarPDF, onFinal
           if (programa?.resumen?.length) {
             mensaje += `\n📋 Programa F-ST-02: ${programa.resumen.length} sucursal(es) actualizada(s).`;
           }
+          if (programa?.sinMantenimiento?.length) {
+            mensaje += `\n⚠️ No cuentan en el programa porque el mantenimiento no está tildado como finalizado: ${programa.sinMantenimiento
+              .map((s) => s.sucursal)
+              .join(', ')}.`;
+          }
           if (programa?.sinParada?.length) {
             mensaje += `\n⚠️ Sin parada en el programa: ${programa.sinParada
               .map((s) => s.sucursal)
@@ -86,7 +91,7 @@ export function PrintButton({ viaje, visitaId, onNewViaje, onValidarPDF, onFinal
             Generando PDF...
           </>
         ) : finalizado ? (
-          <>📄 Regenerar PDF</>
+          <>📄 Guardar cambios y regenerar PDF</>
         ) : (
           <>📄 Finalizar y descargar PDF</>
         )}

@@ -2,7 +2,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatDate, formatTime } from "./formatters";
-import { TIPO_TAREA } from "@/app/models/recorridoModel";
+import { TIPO_TAREA, textoVehiculo } from "@/app/models/recorridoModel";
 
 // Datos del formulario controlado. Agregar la columna FECHA cambia el
 // formato: actualizar versión y fecha cuando Calidad apruebe la revisión.
@@ -15,15 +15,21 @@ const FORMULARIO = {
 
 // "11/06/2026" o "11/06/2026 al 12/06/2026" según las fechas de las visitas
 function rangoFechasVisitas(recorrido) {
-  const fechas = [...new Set((recorrido.visitas || []).map((v) => v.fecha).filter(Boolean))].sort();
-  if (fechas.length === 0) return formatDate(recorrido.fechaRecorrido) || formatDate(new Date());
+  const fechas = [
+    ...new Set((recorrido.visitas || []).map((v) => v.fecha).filter(Boolean)),
+  ].sort();
+  if (fechas.length === 0)
+    return formatDate(recorrido.fechaRecorrido) || formatDate(new Date());
   if (fechas.length === 1) return formatDate(fechas[0]);
   return `${formatDate(fechas[0])} al ${formatDate(fechas[fechas.length - 1])}`;
 }
 
 function descripcionTarea(tarea) {
   const base = tarea.descripcion || "";
-  if (tarea.tipo === TIPO_TAREA.MANTENIMIENTO && tarea.equiposRealizados != null) {
+  if (
+    tarea.tipo === TIPO_TAREA.MANTENIMIENTO &&
+    tarea.equiposRealizados != null
+  ) {
     const n = Number(tarea.equiposRealizados);
     return `${base} (${n} ${n === 1 ? "equipo" : "equipos"})`;
   }
@@ -72,7 +78,9 @@ export async function generatePDF(recorrido, recorridoId) {
   // Fecha vigencia (derecha)
   doc.setFontSize(10);
   doc.setFont(undefined, "normal");
-  doc.text(`Fecha de vigencia: ${FORMULARIO.fechaVigencia}`, 234, yPos - 3, { align: "center" });
+  doc.text(`Fecha de vigencia: ${FORMULARIO.fechaVigencia}`, 234, yPos - 3, {
+    align: "center",
+  });
 
   // Línea separadora
   yPos += 8;
@@ -144,7 +152,10 @@ export async function generatePDF(recorrido, recorridoId) {
       ?.map((v) => v.sucursal)
       .filter(Boolean)
       .join(", ") || "No especificado";
-  const sucursalesLineas = doc.splitTextToSize(sucursalesList, 280 - (col1X + 45));
+  const sucursalesLineas = doc.splitTextToSize(
+    sucursalesList,
+    280 - (col1X + 45),
+  );
   doc.text(sucursalesLineas, col1X + 45, rowY);
   rowY += 8 + (sucursalesLineas.length - 1) * 5;
 
@@ -154,7 +165,7 @@ export async function generatePDF(recorrido, recorridoId) {
   doc.setFont(undefined, "bold");
   doc.text("VEHÍCULO / KILOMETRAJE:", col1X, rowY);
   doc.setFont(undefined, "normal");
-  doc.text(recorrido.vehiculo || "No especificado", col1X + 55, rowY);
+  doc.text(textoVehiculo(recorrido) || "No especificado", col1X + 55, rowY);
   rowY += 12;
 
   // ============================================
@@ -329,7 +340,11 @@ export async function generatePDF(recorrido, recorridoId) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`${FORMULARIO.codigo} ${FORMULARIO.version} - Fecha de revisión: ${FORMULARIO.fechaRevision}`, 14, 195);
+    doc.text(
+      `${FORMULARIO.codigo} ${FORMULARIO.version} - Fecha de revisión: ${FORMULARIO.fechaRevision}`,
+      14,
+      195,
+    );
     doc.text(`Página ${i} de ${pageCount}`, 260, 195);
   }
 

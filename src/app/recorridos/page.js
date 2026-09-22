@@ -6,7 +6,12 @@ import Link from "next/link";
 import { Header } from "@/app/components/layout/Header";
 import { LoadingSpinner } from "@/app/components/common/LoadingSpinner";
 import { firestoreService } from "@/app/services/firestoreService";
-import { ESTADO, tieneContenido } from "@/app/models/recorridoModel";
+import {
+  ESTADO,
+  tieneContenido,
+  textoVehiculo,
+} from "@/app/models/recorridoModel";
+import { eliminarRecorrido } from "@/app/services/programaService";
 import { formatDate } from "@/app/utils/formatters";
 
 const BADGE = {
@@ -45,14 +50,17 @@ export default function RecorridosPage() {
     cargar();
   }, [cargar]);
 
-  // Solo borradores: un recorrido finalizado es un registro y no se borra
+  // Borradores y finalizados. Al eliminar un finalizado se revierte su aporte al programa.
   const eliminar = async (r) => {
-    const detalle = tieneContenido(r)
-      ? `¿Eliminar el borrador del ${formatDate(r.fechaRecorrido)}? Tiene datos cargados y no se puede deshacer.`
-      : "¿Eliminar este borrador vacío?";
+    const detalle =
+      r.estado === ESTADO.FINALIZADO
+        ? `¿Eliminar el recorrido FINALIZADO del ${formatDate(r.fechaRecorrido)}?\n\nLas sucursales que marcó como visitadas vuelven a pendiente en el programa (salvo que otro recorrido las respalde). No se puede deshacer.`
+        : tieneContenido(r)
+          ? `¿Eliminar el borrador del ${formatDate(r.fechaRecorrido)}? Tiene datos cargados y no se puede deshacer.`
+          : "¿Eliminar este borrador vacío?";
     if (!confirm(detalle)) return;
     try {
-      await firestoreService.deleteRecorrido(r.id);
+      await eliminarRecorrido(r.id);
       setRecorridos((prev) => prev.filter((x) => x.id !== r.id));
     } catch (e) {
       alert("No se pudo eliminar: " + e.message);
@@ -176,19 +184,23 @@ export default function RecorridosPage() {
                     .join(" · ") || "Sin visitas cargadas"}
                 </p>
                 <div className="flex flex-wrap gap-4 mt-1 text-xs text-gray-500">
-                  {r.vehiculo && <span>🚙 {r.vehiculo}</span>}
+                  {r.vehiculo && <span>🚙 {textoVehiculo(r)}</span>}
                   {vinculadas > 0 && (
                     <span>📅 {vinculadas} visita(s) en el programa</span>
                   )}
-                  {r.estado === ESTADO.BORRADOR && (
-                    <button
-                      type="button"
-                      onClick={() => eliminar(r)}
-                      className="text-red-600 hover:underline"
-                    >
-                      Eliminar borrador
-                    </button>
-                  )}
+                  <Link
+                    href={`/?id=${r.id}`}
+                    className="text-manzur-primary hover:underline"
+                  >
+                    ✏️ Editar
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => eliminar(r)}
+                    className="text-red-600 hover:underline"
+                  >
+                    🗑️ Eliminar
+                  </button>
                   {r.pdfUrl && (
                     <a
                       href={r.pdfUrl}

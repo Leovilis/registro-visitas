@@ -11,9 +11,18 @@ import {
   TIPO_TAREA,
 } from "@/app/models/recorridoModel";
 import { getSucursal } from "@/app/data/catalogoSucursales";
-import { aplicarRecorridoAlPrograma, getViaje, listParadasDeViaje } from "@/app/services/programaService";
+import {
+  aplicarRecorridoAlPrograma,
+  sincronizarRecorridoConPrograma,
+  eliminarRecorrido,
+  getViaje,
+  listParadasDeViaje,
+} from "@/app/services/programaService";
 import { getEmpresa } from "@/app/data/catalogoSucursales";
-import { crearRecorridoDesdeViaje, tieneContenido } from "@/app/models/recorridoModel";
+import {
+  crearRecorridoDesdeViaje,
+  tieneContenido,
+} from "@/app/models/recorridoModel";
 
 export function useVisita(recorridoIdParam = null, viajeParam = null) {
   const [recorrido, setRecorrido] = useState(createEmptyRecorrido());
@@ -70,7 +79,12 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
               firestoreService.getSucursales(),
             ]);
             if (viaje) {
-              nuevo = crearRecorridoDesdeViaje(viaje, paradas, sucursales, getEmpresa);
+              nuevo = crearRecorridoDesdeViaje(
+                viaje,
+                paradas,
+                sucursales,
+                getEmpresa,
+              );
               setToastMessage({
                 message: `Recorrido precargado desde el viaje ${viaje.nro} (${nuevo.visitas.length} visitas)`,
                 type: "success",
@@ -89,14 +103,17 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
 
         // Guardar enseguida si vino precargado, para no depender del auto-guardado
         if (viajeParam && nuevo.viajePlanId) {
-          firestoreService.saveRecorrido(nuevoId, nuevo).catch((e) =>
-            console.error("🔴 Error guardando precarga:", e),
-          );
+          firestoreService
+            .saveRecorrido(nuevoId, nuevo)
+            .catch((e) => console.error("🔴 Error guardando precarga:", e));
         }
       }
 
       setLoading(false);
-      console.log("🔵 initRecorrido - Finalizado, ID actual:", recorridoIdParam || 'nuevo');
+      console.log(
+        "🔵 initRecorrido - Finalizado, ID actual:",
+        recorridoIdParam || "nuevo",
+      );
     };
 
     initRecorrido();
@@ -110,7 +127,7 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
       console.log("🟢 saveRecorrido llamado, force:", force);
       console.log("🟢 recorridoId:", recorridoId);
       console.log("🟢 recorrido:", recorrido);
-      
+
       if (!recorridoId) {
         console.log("🔴 No hay recorridoId");
         return;
@@ -126,6 +143,11 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
         console.log("🟡 Intentando guardar en Firestore...");
         try {
           await firestoreService.saveRecorrido(recorridoId, recorrido);
+          // Un recorrido finalizado que se corrige mantiene el programa al día
+          // (visitas agregadas o quitadas, tareas que dejan de estar finalizadas).
+          if (recorrido.estado === ESTADO.FINALIZADO) {
+            await sincronizarRecorridoConPrograma(recorridoId, recorrido);
+          }
           setLastSaved(new Date());
           console.log("✅ Guardado exitoso en Firestore");
         } catch (error) {
@@ -155,71 +177,127 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
 
     // 1. Validar campos del recorrido
     if (!recorrido.visitante || recorrido.visitante.trim() === "") {
-      errores.push({ field: 'visitante', label: 'Visitante' });
+      errores.push({ field: "visitante", label: "Visitante" });
     }
     if (!recorrido.area || recorrido.area.trim() === "") {
-      errores.push({ field: 'area', label: 'Área' });
+      errores.push({ field: "area", label: "Área" });
+    }
+    if (!recorrido.vehiculo) {
+      errores.push({ field: "vehiculo", label: "Vehículo" });
     }
     if (!recorrido.fechaRecorrido) {
-      errores.push({ field: 'fechaRecorrido', label: 'Fecha del recorrido' });
+      errores.push({ field: "fechaRecorrido", label: "Fecha del recorrido" });
     }
     if (!recorrido.horarioSalida || recorrido.horarioSalida.trim() === "") {
-      errores.push({ field: 'horarioSalida', label: 'Hora de salida de administración' });
+      errores.push({
+        field: "horarioSalida",
+        label: "Hora de salida de administración",
+      });
     }
     if (!recorrido.fechaSalida || recorrido.fechaSalida.trim() === "") {
-      errores.push({ field: 'fechaSalida', label: 'Fecha de salida de administración' });
+      errores.push({
+        field: "fechaSalida",
+        label: "Fecha de salida de administración",
+      });
     }
     if (!recorrido.horarioLlegada || recorrido.horarioLlegada.trim() === "") {
-      errores.push({ field: 'horarioLlegada', label: 'Hora de llegada a administración' });
+      errores.push({
+        field: "horarioLlegada",
+        label: "Hora de llegada a administración",
+      });
     }
     if (!recorrido.fechaLlegada || recorrido.fechaLlegada.trim() === "") {
-      errores.push({ field: 'fechaLlegada', label: 'Fecha de llegada a administración' });
+      errores.push({
+        field: "fechaLlegada",
+        label: "Fecha de llegada a administración",
+      });
     }
 
     // 2. Validar cada visita
     if (!recorrido.visitas || recorrido.visitas.length === 0) {
-      errores.push({ field: 'visitas', label: 'Visitas (agregar al menos una)' });
+      errores.push({
+        field: "visitas",
+        label: "Visitas (agregar al menos una)",
+      });
     } else {
       recorrido.visitas.forEach((visita, index) => {
         const num = index + 1;
         if (!visita.empresa || visita.empresa.trim() === "") {
-          errores.push({ field: `visita_${index}_empresa`, label: `Visita ${num}: Empresa` });
+          errores.push({
+            field: `visita_${index}_empresa`,
+            label: `Visita ${num}: Empresa`,
+          });
         }
         if (!visita.sucursal || visita.sucursal.trim() === "") {
-          errores.push({ field: `visita_${index}_sucursal`, label: `Visita ${num}: Sucursal` });
+          errores.push({
+            field: `visita_${index}_sucursal`,
+            label: `Visita ${num}: Sucursal`,
+          });
         }
         const sucursalCat = getSucursal(visita.sucursalId);
         if (visita.sucursal && !visita.sucursalId) {
-          errores.push({ field: `visita_${index}_sucursal`, label: `Visita ${num}: Sucursal (volver a elegirla de la lista)` });
+          errores.push({
+            field: `visita_${index}_sucursal`,
+            label: `Visita ${num}: Sucursal (volver a elegirla de la lista)`,
+          });
         }
         if (sucursalCat?.depositos?.length && !visita.depositoId) {
-          errores.push({ field: `visita_${index}_deposito`, label: `Visita ${num}: Depósito` });
+          errores.push({
+            field: `visita_${index}_deposito`,
+            label: `Visita ${num}: Depósito`,
+          });
         }
         if (!visita.fecha) {
-          errores.push({ field: `visita_${index}_fecha`, label: `Visita ${num}: Fecha de la visita` });
+          errores.push({
+            field: `visita_${index}_fecha`,
+            label: `Visita ${num}: Fecha de la visita`,
+          });
         } else if (
           (recorrido.fechaSalida && visita.fecha < recorrido.fechaSalida) ||
           (recorrido.fechaLlegada && visita.fecha > recorrido.fechaLlegada)
         ) {
-          errores.push({ field: `visita_${index}_fecha`, label: `Visita ${num}: Fecha fuera del rango salida/llegada` });
+          errores.push({
+            field: `visita_${index}_fecha`,
+            label: `Visita ${num}: Fecha fuera del rango salida/llegada`,
+          });
         }
         (visita.tareas || []).forEach((t) => {
-          if (t.tipo === TIPO_TAREA.MANTENIMIENTO && t.completada &&
-              (t.equiposRealizados === null || t.equiposRealizados === undefined || t.equiposRealizados === "")) {
-            errores.push({ field: `visita_${index}_equipos_${t.id}`, label: `Visita ${num}: Equipos realizados` });
+          if (
+            t.tipo === TIPO_TAREA.MANTENIMIENTO &&
+            t.completada &&
+            (t.equiposRealizados === null ||
+              t.equiposRealizados === undefined ||
+              t.equiposRealizados === "")
+          ) {
+            errores.push({
+              field: `visita_${index}_equipos_${t.id}`,
+              label: `Visita ${num}: Equipos realizados`,
+            });
           }
         });
         if (!visita.provincia || visita.provincia.trim() === "") {
-          errores.push({ field: `visita_${index}_provincia`, label: `Visita ${num}: Provincia` });
+          errores.push({
+            field: `visita_${index}_provincia`,
+            label: `Visita ${num}: Provincia`,
+          });
         }
         if (!visita.horarioIngreso || visita.horarioIngreso.trim() === "") {
-          errores.push({ field: `visita_${index}_horarioIngreso`, label: `Visita ${num}: Hora de ingreso` });
+          errores.push({
+            field: `visita_${index}_horarioIngreso`,
+            label: `Visita ${num}: Hora de ingreso`,
+          });
         }
         if (!visita.horarioEgreso || visita.horarioEgreso.trim() === "") {
-          errores.push({ field: `visita_${index}_horarioEgreso`, label: `Visita ${num}: Hora de egreso` });
+          errores.push({
+            field: `visita_${index}_horarioEgreso`,
+            label: `Visita ${num}: Hora de egreso`,
+          });
         }
         if (!visita.firma || visita.firma.trim() === "") {
-          errores.push({ field: `visita_${index}_firma`, label: `Visita ${num}: Firma del responsable` });
+          errores.push({
+            field: `visita_${index}_firma`,
+            label: `Visita ${num}: Firma del responsable`,
+          });
         }
       });
     }
@@ -238,33 +316,37 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
   // ============================================
   const enfocarCampo = useCallback((fieldId) => {
     console.log("🔍 Buscando campo:", fieldId);
-    
+
     let elemento = document.getElementById(fieldId);
-    
+
     if (!elemento) {
       elemento = document.querySelector(`[data-field="${fieldId}"]`);
     }
-    
-    if (!elemento && fieldId.startsWith('visita_')) {
-      const parts = fieldId.split('_');
+
+    if (!elemento && fieldId.startsWith("visita_")) {
+      const parts = fieldId.split("_");
       const index = parseInt(parts[1]);
-      const campo = parts.slice(2).join('_');
-      
-      const visitaContainer = document.querySelector(`[data-visita-index="${index}"]`);
+      const campo = parts.slice(2).join("_");
+
+      const visitaContainer = document.querySelector(
+        `[data-visita-index="${index}"]`,
+      );
       if (visitaContainer) {
-        elemento = visitaContainer.querySelector(`[data-field="${campo}"]`) ||
-                   visitaContainer.querySelector(`#${campo}_${index}`) ||
-                   visitaContainer.querySelector(`[id*="${campo}"]`);
-        
+        elemento =
+          visitaContainer.querySelector(`[data-field="${campo}"]`) ||
+          visitaContainer.querySelector(`#${campo}_${index}`) ||
+          visitaContainer.querySelector(`[id*="${campo}"]`);
+
         if (!elemento) {
           elemento = visitaContainer;
         }
       }
     }
 
-    if (fieldId === 'visitas') {
-      const botonAgregar = document.querySelector('button[class*="Agregar visita"]') ||
-                          document.querySelector('button:has(.text-lg)');
+    if (fieldId === "visitas") {
+      const botonAgregar =
+        document.querySelector('button[class*="Agregar visita"]') ||
+        document.querySelector("button:has(.text-lg)");
       if (botonAgregar) {
         elemento = botonAgregar;
       }
@@ -272,47 +354,51 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
 
     if (elemento) {
       console.log("✅ Campo encontrado, enfocando...");
-      
-      elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      
+
+      elemento.scrollIntoView({ behavior: "smooth", block: "center" });
+
       setTimeout(() => {
-        if (elemento.tagName === 'INPUT' || elemento.tagName === 'SELECT' || elemento.tagName === 'TEXTAREA') {
+        if (
+          elemento.tagName === "INPUT" ||
+          elemento.tagName === "SELECT" ||
+          elemento.tagName === "TEXTAREA"
+        ) {
           elemento.focus({ preventScroll: true });
         }
-        
-        elemento.classList.add('border-red-500', 'ring-2', 'ring-red-200');
-        
-        const parent = elemento.closest('div') || elemento.parentElement;
-        let errorMsg = parent.querySelector('.campo-requerido');
+
+        elemento.classList.add("border-red-500", "ring-2", "ring-red-200");
+
+        const parent = elemento.closest("div") || elemento.parentElement;
+        let errorMsg = parent.querySelector(".campo-requerido");
         if (!errorMsg && parent) {
-          errorMsg = document.createElement('span');
-          errorMsg.className = 'campo-requerido text-red-500 text-xs font-medium ml-1';
-          errorMsg.textContent = '⚠️ Campo requerido';
+          errorMsg = document.createElement("span");
+          errorMsg.className =
+            "campo-requerido text-red-500 text-xs font-medium ml-1";
+          errorMsg.textContent = "⚠️ Campo requerido";
           parent.appendChild(errorMsg);
         }
-        
+
         const timeoutId = setTimeout(() => {
-          elemento.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
-          const msg = parent?.querySelector('.campo-requerido');
+          elemento.classList.remove("border-red-500", "ring-2", "ring-red-200");
+          const msg = parent?.querySelector(".campo-requerido");
           if (msg) msg.remove();
         }, 3000);
-        
+
         const cleanup = () => {
           clearTimeout(timeoutId);
-          elemento.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
-          const msg = parent?.querySelector('.campo-requerido');
+          elemento.classList.remove("border-red-500", "ring-2", "ring-red-200");
+          const msg = parent?.querySelector(".campo-requerido");
           if (msg) msg.remove();
-          elemento.removeEventListener('input', cleanup);
-          elemento.removeEventListener('change', cleanup);
-          elemento.removeEventListener('click', cleanup);
+          elemento.removeEventListener("input", cleanup);
+          elemento.removeEventListener("change", cleanup);
+          elemento.removeEventListener("click", cleanup);
         };
-        
-        elemento.addEventListener('input', cleanup);
-        elemento.addEventListener('change', cleanup);
-        elemento.addEventListener('click', cleanup);
-        
+
+        elemento.addEventListener("input", cleanup);
+        elemento.addEventListener("change", cleanup);
+        elemento.addEventListener("click", cleanup);
       }, 300);
-      
+
       return true;
     } else {
       console.warn("⚠️ Campo no encontrado:", fieldId);
@@ -325,24 +411,26 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
   // ============================================
   const validarYGenerarPDF = useCallback(async () => {
     const errores = validarParaPDF();
-    
+
     if (errores.length > 0) {
-      setSaveError(`❌ Hay ${errores.length} campo(s) obligatorio(s) por completar`);
+      setSaveError(
+        `❌ Hay ${errores.length} campo(s) obligatorio(s) por completar`,
+      );
       setToastMessage({
         message: `Hay ${errores.length} campo(s) obligatorio(s) por completar`,
-        type: 'error'
+        type: "error",
       });
-      
+
       if (errores.length > 0) {
         setTimeout(() => {
           enfocarCampo(errores[0].field);
         }, 500);
       }
-      
+
       console.error("❌ Errores de validación para PDF:", errores);
       return { success: false, errores };
     }
-    
+
     console.log("✅ Validación exitosa para PDF");
     setSaveError(null);
     setToastMessage(null);
@@ -365,7 +453,8 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
 
   // Acepta (visitaId, campo, valor) o (visitaId, { campo: valor, ... })
   const updateVisita = useCallback((visitaId, field, value) => {
-    const cambios = typeof field === "object" && field !== null ? field : { [field]: value };
+    const cambios =
+      typeof field === "object" && field !== null ? field : { [field]: value };
     setRecorrido((prev) => ({
       ...prev,
       visitas: prev.visitas.map((v) =>
@@ -379,7 +468,12 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
     setRecorrido((prev) => {
       const base = nuevaVisita || createEmptyVisita(prev.visitas.length);
       const ultima = prev.visitas[prev.visitas.length - 1];
-      const fecha = base.fecha || ultima?.fecha || prev.fechaSalida || prev.fechaRecorrido || "";
+      const fecha =
+        base.fecha ||
+        ultima?.fecha ||
+        prev.fechaSalida ||
+        prev.fechaRecorrido ||
+        "";
       return {
         ...prev,
         visitas: [...prev.visitas, { ...base, fecha }],
@@ -415,7 +509,10 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
       try {
         const subida = storageService.uploadPDF(recorridoId, pdfBlob);
         const limite = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("tiempo de espera agotado")), 20000),
+          setTimeout(
+            () => reject(new Error("tiempo de espera agotado")),
+            20000,
+          ),
         );
         ({ url } = await Promise.race([subida, limite]));
       } catch (error) {
@@ -430,9 +527,10 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
         estado: ESTADO.FINALIZADO,
         pdfUrl: url,
         finalizadoAt: new Date().toISOString(),
-        visitas: recorrido.visitas.map((v) =>
-          programa.asignaciones[v.id] ? { ...v, paradaPlanId: programa.asignaciones[v.id] } : v,
-        ),
+        visitas: recorrido.visitas.map((v) => ({
+          ...v,
+          paradaPlanId: programa.asignaciones[v.id] ?? v.paradaPlanId ?? null,
+        })),
       };
       await firestoreService.saveRecorrido(recorridoId, finalizado);
       setRecorrido(finalizado);
@@ -443,6 +541,12 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
     [recorridoId, recorrido],
   );
 
+  /** Elimina el recorrido abierto (y revierte su aporte al programa). */
+  const eliminarRecorridoActual = useCallback(async () => {
+    if (autoSaveTimeout.current) clearTimeout(autoSaveTimeout.current);
+    return eliminarRecorrido(recorridoId);
+  }, [recorridoId]);
+
   const saveborrador = useCallback(async () => {
     console.log("💾 Guardando borrador...");
     await saveRecorrido(true);
@@ -452,13 +556,13 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
     console.log("🆕 Creando nuevo recorrido...");
     const nuevoId = crypto.randomUUID();
     idCreadoLocalmente.current = nuevoId;
-    
+
     setRecorrido(createEmptyRecorrido());
     setRecorridoId(nuevoId);
     setLastSaved(null);
     setSaveError(null);
     setToastMessage(null);
-    
+
     window.history.pushState({}, "", `?id=${nuevoId}`);
     console.log("🆕 URL actualizada con nuevo ID:", window.location.href);
   }, []);
@@ -491,6 +595,7 @@ export function useVisita(recorridoIdParam = null, viajeParam = null) {
     removeVisita,
     saveborrador,
     savePDFToStorage,
+    eliminarRecorridoActual,
     newRecorrido,
     validarYGenerarPDF,
     clearToast,
