@@ -9,6 +9,7 @@ import { Toast } from "@/app/components/common/Toast";
 import { TimelineBar } from "@/app/components/common/TimelineBar";
 import { PrintButton } from "@/app/components/ui/PrintButton";
 import { useVisita } from "@/app/hooks/useVisita";
+import { tieneContenido } from "@/app/models/recorridoModel";
 import { RecorridoForm } from "@/app/components/forms/RecorridoForm";
 import { PrintableContent } from "@/app/components/ui/PrintableContent";
 import { LoadingSpinner } from "@/app/components/common/LoadingSpinner";
@@ -103,7 +104,7 @@ function HomeContent() {
 
         <TimelineBar recorrido={recorrido} />
 
-        <section className="mt-6 p-4 bg-white border rounded-lg space-y-3">
+        <section className="mt-6 p-4 bg-white border rounded-lg">
           <PrintButton
             viaje={recorrido}
             visitaId={recorridoId}
@@ -111,6 +112,11 @@ function HomeContent() {
             onValidarPDF={validarYGenerarPDF}
             onFinalizar={savePDFToStorage}
           />
+        </section>
+
+        {/* Eliminar: flotante abajo a la izquierda, simétrico al de guardar.
+            Solo si el recorrido ya existe (tiene algo cargado o está finalizado). */}
+        {(recorrido.estado === "finalizado" || tieneContenido(recorrido)) && (
           <button
             type="button"
             onClick={async () => {
@@ -126,11 +132,14 @@ function HomeContent() {
                 alert("No se pudo eliminar: " + e.message);
               }
             }}
-            className="w-full py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50"
+            className="fixed bottom-4 left-4 w-14 h-14 sm:w-auto sm:h-auto sm:px-4 sm:py-2 flex items-center justify-center gap-2 bg-white text-red-600 border-2 border-red-500 rounded-full shadow-lg hover:bg-red-50 transition-all z-50"
+            aria-label="Eliminar recorrido"
+            title="Eliminar recorrido"
           >
-            🗑️ Eliminar recorrido
+            <span className="text-xl sm:text-base">🗑️</span>
+            <span className="hidden sm:inline">Eliminar</span>
           </button>
-        </section>
+        )}
 
         <button
           onClick={() => {

@@ -32,11 +32,13 @@ export const TIPO_TAREA_LABEL = {
 // Esta versión de la app es solo para Sistemas
 export const AREA_APP = "SISTEMAS";
 
-// Vehículos habilitados para los recorridos
+// Vehículos habilitados. Los textos son EXACTAMENTE los del F-RD-05
+// (check list de camionetas), para que el dato cruce sin traducciones.
 export const VEHICULOS = [
-  "Hilux (MVH749)",
-  "Amarok (AB862EW)",
-  "Amarok (PKE986)",
+  "Amarok - AB 862 EW",
+  "Amarok - PKE 986",
+  "Hilux -MVH 749",
+  "Ranger NPM 806",
 ];
 
 /** "Amarok (PKE986) - 12345 km" para el PDF y los listados. */
@@ -109,6 +111,7 @@ export const createEmptyRecorrido = () => {
     horarioLlegada: "",
     vehiculo: "",
     kilometraje: "",
+    checklist: { salidaAt: null, entregaAt: null }, // F-RD-05 abierto desde la app
     observacionesGenerales: "",
     estado: ESTADO.BORRADOR,
     pdfUrl: null,
@@ -239,6 +242,7 @@ export const normalizarRecorrido = (data) => ({
   fechaSalida: data.fechaSalida || data.fechaRecorrido || "",
   fechaLlegada: data.fechaLlegada || data.fechaRecorrido || "",
   viajePlanId: data.viajePlanId ?? null,
+  checklist: data.checklist ?? { salidaAt: null, entregaAt: null },
   visitas: (data.visitas || []).map((v) => {
     let sucursalId = v.sucursalId || "";
     let depositoId = v.depositoId ?? null;

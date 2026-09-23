@@ -4,6 +4,7 @@
 import { TimeButton } from './TimeButton';
 import { VisitaForm } from './VisitaForm';
 import { createEmptyVisita, AREA_APP, VEHICULOS, fechaLocalISO, horaLocal } from '@/app/models/recorridoModel';
+import { urlChecklist } from '@/app/data/checklistCamionetas';
 
 const labelCls = 'block text-sm font-semibold text-gray-700 mb-1';
 const inputCls =
@@ -37,6 +38,50 @@ function HoraYFecha({ titulo, idHora, idFecha, hora, fecha, onCambiar }) {
                     />
                 </label>
             </div>
+        </div>
+    );
+}
+
+// F-RD-05: se completa en Forms, pero con los datos del recorrido ya cargados
+function ChecklistCamioneta({ recorrido, onMarcar }) {
+    const faltanDatos = !recorrido.vehiculo || !recorrido.visitante?.trim();
+
+    const abrir = (momento) => {
+        window.open(urlChecklist(recorrido, momento), '_blank', 'noopener');
+        onMarcar(momento);
+    };
+
+    const Boton = ({ momento, texto }) => {
+        const hecho = recorrido.checklist?.[`${momento}At`];
+        return (
+            <button
+                type="button"
+                onClick={() => abrir(momento)}
+                disabled={faltanDatos}
+                className="flex-1 px-3 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+            >
+                {hecho ? '✅' : '📝'} {texto}
+            </button>
+        );
+    };
+
+    return (
+        <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+            <p className={labelCls}>🚙 Check list de camioneta (F-RD-05)</p>
+            <p className="text-xs text-gray-500 mb-2">
+                Se abre en Forms con la fecha, el conductor, los destinos y la camioneta
+                ya cargados, tal como estén en este momento. Completá los datos de arriba antes
+                de abrirlo. El estado del vehículo y el combustible se cargan en el formulario.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+                <Boton momento="salida" texto="Check list de salida" />
+                <Boton momento="entrega" texto="Check list de entrega" />
+            </div>
+            {faltanDatos && (
+                <p className="text-xs text-amber-700 mt-2">
+                    Cargá visitante y vehículo para precargar el formulario.
+                </p>
+            )}
         </div>
     );
 }
@@ -96,12 +141,13 @@ export function RecorridoForm({
                         <label htmlFor="vehiculo" className={labelCls}>
                             Vehículo <span className="text-red-500">*</span>
                         </label>
-                        <div className="flex gap-2">
+                        {/* Grilla fija: lista flexible + 7rem para los km */}
+                        <div className="grid grid-cols-[minmax(0,1fr)_7rem] gap-2">
                             <select
                                 id="vehiculo"
                                 value={recorrido.vehiculo || ''}
                                 onChange={(e) => onUpdateRecorrido('vehiculo', e.target.value)}
-                                className={`${inputCls} flex-1 min-w-0 bg-white`}
+                                className={`${inputCls} bg-white text-gray-900`}
                                 required
                             >
                                 <option value="">Seleccionar</option>
@@ -122,7 +168,7 @@ export function RecorridoForm({
                                 onChange={(e) => onUpdateRecorrido('kilometraje', e.target.value)}
                                 placeholder="Km"
                                 aria-label="Kilometraje"
-                                className={`${inputCls} w-28`}
+                                className={inputCls}
                             />
                         </div>
                     </div>
@@ -201,7 +247,16 @@ export function RecorridoForm({
                         + Agregar visita
                     </button>
                 </div>
-
+                {/* Check list de camioneta: al final, con todos los datos ya cargados */}
+                <ChecklistCamioneta
+                    recorrido={recorrido}
+                    onMarcar={(momento) =>
+                        onUpdateRecorrido('checklist', {
+                            ...(recorrido.checklist || {}),
+                            [`${momento}At`]: new Date().toISOString(),
+                        })
+                    }
+                />
                 {/* Llegada */}
                 <HoraYFecha
                     titulo="🏁 Llegada a administración"
@@ -214,6 +269,8 @@ export function RecorridoForm({
                         onUpdateRecorrido('fechaLlegada', fecha);
                     }}
                 />
+
+
             </div>
         </section>
     );
