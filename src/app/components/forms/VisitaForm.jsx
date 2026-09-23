@@ -20,7 +20,7 @@ import { firestoreService } from '@/app/services/firestoreService';
 import {
     TIPO_TAREA,
     TIPO_TAREA_LABEL,
-    DESCRIPCION_MANTENIMIENTO,
+    DESCRIPCION_POR_TIPO,
     createEmptyTarea,
     seleccionarSucursal,
 } from '@/app/models/recorridoModel';
@@ -103,7 +103,7 @@ export function VisitaForm({
 
     const agregarTarea = (tipo = TIPO_TAREA.OTRA) => {
         const nueva = createEmptyTarea(tipo);
-        if (tipo === TIPO_TAREA.MANTENIMIENTO) nueva.descripcion = DESCRIPCION_MANTENIMIENTO;
+        nueva.descripcion = DESCRIPCION_POR_TIPO[tipo] || '';
         onUpdate('tareas', [...tareas, nueva]);
     };
 
@@ -113,6 +113,12 @@ export function VisitaForm({
             tareas.map((t) => {
                 if (t.id !== tareaId) return t;
                 const next = { ...t, ...cambios };
+                // Al cambiar de tipo se precarga su descripción, salvo que
+                // la tarea tenga un texto propio
+                if (cambios.tipo && cambios.tipo !== t.tipo) {
+                    const propia = t.descripcion && t.descripcion !== DESCRIPCION_POR_TIPO[t.tipo];
+                    if (!propia) next.descripcion = DESCRIPCION_POR_TIPO[cambios.tipo] || '';
+                }
                 if (next.tipo !== TIPO_TAREA.MANTENIMIENTO) next.equiposRealizados = null;
                 // Cargar equipos realizados implica que el mantenimiento se hizo
                 if (
@@ -131,7 +137,7 @@ export function VisitaForm({
         onUpdate('tareas', tareas.filter((t) => t.id !== tareaId));
     };
 
-    const yaTieneMantenimiento = tareas.some((t) => t.tipo === TIPO_TAREA.MANTENIMIENTO);
+    const yaTiene = (tipo) => tareas.some((t) => t.tipo === tipo);
 
     // ------------------------------------------------------------
     // Render
@@ -428,13 +434,22 @@ export function VisitaForm({
 
                     {/* Botones para agregar tareas: debajo de la lista, a lo ancho en mobile */}
                     <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                        {mostrarTipo && !yaTieneMantenimiento && (
+                        {mostrarTipo && !yaTiene(TIPO_TAREA.MANTENIMIENTO) && (
                             <button
                                 type="button"
                                 onClick={() => agregarTarea(TIPO_TAREA.MANTENIMIENTO)}
                                 className="flex-1 py-2 text-sm border border-manzur-primary text-manzur-primary rounded-md hover:bg-blue-50"
                             >
                                 + Mantenimiento preventivo
+                            </button>
+                        )}
+                        {mostrarTipo && !yaTiene(TIPO_TAREA.INVENTARIO) && (
+                            <button
+                                type="button"
+                                onClick={() => agregarTarea(TIPO_TAREA.INVENTARIO)}
+                                className="flex-1 py-2 text-sm border border-manzur-primary text-manzur-primary rounded-md hover:bg-blue-50"
+                            >
+                                + Inventario
                             </button>
                         )}
                         <button

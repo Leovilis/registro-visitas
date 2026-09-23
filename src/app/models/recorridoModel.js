@@ -63,6 +63,14 @@ export const horaLocal = (d = new Date()) =>
 
 export const DESCRIPCION_MANTENIMIENTO =
   "MANTENIMIENTO Y CHEQUEO DE PERIFERICOS";
+export const DESCRIPCION_INVENTARIO = "INVENTARIO";
+
+// Descripción que se precarga según el tipo de tarea
+export const DESCRIPCION_POR_TIPO = {
+  mantenimiento: DESCRIPCION_MANTENIMIENTO,
+  inventario: DESCRIPCION_INVENTARIO,
+  otra: "",
+};
 
 // ------------------------------------------------------------
 // Creadores
